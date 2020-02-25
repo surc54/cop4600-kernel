@@ -413,6 +413,7 @@ noinline void __ref rest_init(void)
 	 */
 	rcu_read_lock();
 	tsk = find_task_by_pid_ns(pid, &init_pid_ns);
+	printk("FUCKFUCK FUCK FUCK FUCK %d", pid);
 	set_cpus_allowed_ptr(tsk, cpumask_of(smp_processor_id()));
 	rcu_read_unlock();
 
