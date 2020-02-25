@@ -2666,7 +2666,7 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
 
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
-	task_struct *item = find_task_by_vpid(givenPid);
+	struct task_struct *item = find_task_by_vpid(givenPid);
 	if (!item) {
 		printk("get_tag called on nonexistant task_struct\n");
 		return -1;
