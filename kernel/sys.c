@@ -2663,3 +2663,15 @@ COMPAT_SYSCALL_DEFINE1(sysinfo, struct compat_sysinfo __user *, info)
 	return 0;
 }
 #endif /* CONFIG_COMPAT */
+
+SYSCALL_DEFINE1(get_tag, int, givenPid)
+{
+	printk("get_tag syscall called with pid %d", givenPid);
+	return 0;
+}
+
+SYSCALL_DEFINE2(set_tag, int, givenPid, unsigned int, tag)
+{
+	printk("set_tag syscall called...");
+	return 0;
+}
