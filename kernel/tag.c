@@ -14,7 +14,7 @@ SYSCALL_DEFINE1(get_tag, int, givenPid)
         return item->tag;
 }
 
-SYSCALL_DEFINE2(set_tag, int, givenPid, unsigned int, tag)
+SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 {
 	if (tag >> 31 != 0) {
 		printk("set_tag called with invalid tag (not 0 in MSB)");
@@ -24,17 +24,17 @@ SYSCALL_DEFINE2(set_tag, int, givenPid, unsigned int, tag)
 	// has_capability was found in include/linux/capability.h
 	bool is_root = has_capability(current, CAP_SYS_ADMIN);
 
-	if (current->pid != givenPid) {
+	if (current->pid != pid) {
 		// Modifying someone else
 		if (!is_root) {
 			printk("set_tag called without sudo and non-current pid");
 			return -1;
 		}
 
-		struct task_struct *item = find_task_by_vpid(givenPid);
+		struct task_struct *item = find_task_by_vpid(pid);
 
 		if (!item) {
-			printk("set_tag called on nonexistant pid %d", givenPid);
+			printk("set_tag called on nonexistant pid %d", pid);
 			return -1;
 		}
 
@@ -52,6 +52,7 @@ SYSCALL_DEFINE2(set_tag, int, givenPid, unsigned int, tag)
 					cur_level, new_level);
 				return -1;
 			}
+
 			// check if any bitmap item was set to 1 from 0
 			unsigned int cur_bitmap = current_tag >> 2;
 			unsigned int new_bitmap = tag >> 2;
