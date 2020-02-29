@@ -79,5 +79,6 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 		current->tag = tag;
 		printk("set_tag on PID %d (%u -> %u)\n", pid, current_tag, tag);
 	}
-        return 0;
+
+        return tag;
 }
