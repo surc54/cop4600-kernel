@@ -1,6 +1,7 @@
 #include <linux/sched.h>
 #include <linux/syscalls.h>
 #include <linux/printk.h>
+#include <linux/capability.h>
 
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
@@ -20,7 +21,7 @@ SYSCALL_DEFINE2(set_tag, int, givenPid, unsigned int, tag)
 		return -1;
 	}
 
-	// has_capability was found in include/linux/capability
+	// has_capability was found in include/linux/capability.h
 	bool is_root = has_capability(current, CAP_SYS_ADMIN);
 
 	if (current->pid != givenPid) {
@@ -37,7 +38,8 @@ SYSCALL_DEFINE2(set_tag, int, givenPid, unsigned int, tag)
 			return -1;
 		}
 
-		// TODO
+		printk("set_tag on PID %d (%u -> %u)", pid, item->tag, tag);
+		item->tag = tag;
 	} else {
 		// Modifying self
 		unsigned int current_tag = current->tag;
@@ -60,12 +62,10 @@ SYSCALL_DEFINE2(set_tag, int, givenPid, unsigned int, tag)
 				printk("set_tag called without sudo and tag bitmap item set to 1");
 				return -1;
 			}
-
-			// everything is okay, set tag
-			current->tag = tag;
 		}
+		// everything is okay, set tag
+		current->tag = tag;
+		printk("set_tag on PID %d (%u -> %u)", pid, current_tag, tag);
 	}
-
-        printk("set_tag syscall called...");
         return 0;
 }
