@@ -38,7 +38,8 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 	if (current->pid != pid) {
 		// Modifying someone else
 		if (!is_root) {
-			printk("set_tag called without sudo and non-current pid\n");
+			printk("set_tag called without sudo and non-current pid (cur=%d != %d)\n",
+				current->pid, pid);
 			return -1;
 		}
 
