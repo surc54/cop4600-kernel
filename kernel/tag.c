@@ -83,3 +83,15 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
         return tag;
 }
+
+SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
+{
+	printk("get_level_alloc called!\n");
+	return 0;
+}
+
+SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int newAlloc)
+{
+	printk("set_level_alloc called!\n");
+	return 0;
+}
