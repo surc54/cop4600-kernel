@@ -90,7 +90,7 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 	return 0;
 }
 
-SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int newAlloc)
+SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 {
 	printk("set_level_alloc called!\n");
 	return 0;
