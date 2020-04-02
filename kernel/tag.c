@@ -86,7 +86,7 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
-	struct sched_class *scheduler;
+	const struct sched_class *scheduler;
 	unsigned int cur_lvl;
 
 	if (!current) {
