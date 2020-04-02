@@ -1,9 +1,10 @@
 #include <linux/sched.h>
+#include <kernel/sched.h>
 #include <linux/syscalls.h>
 #include <linux/printk.h>
 #include <linux/capability.h>
 
-extern const struct sched_class fair_sched_class;
+struct cfs_rq;
 
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
@@ -90,32 +91,27 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
 	unsigned int cur_lvl;
 	struct sched_entity se;
-	struct cfs_rq q1, q2;
+	struct cfs_rq *q1, *q2;
 
 	if (!current) {
 		printk("[get_level_alloc] could not get current process.\n");
 		return -1;
 	}
 
-	if (!current->se) {
-		printk("[get_level_alloc] could not get sched_entity from current.\n");
-		return -1;
-	}
-
 	se = current->se;
 
-	if (!se->cfs_rq) {
+	if (!se.cfs_rq) {
 		printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
 		return -1;
 	}
 
-	if (!se->my_q) {
+	if (!se.my_q) {
 		printk("[get_level_alloc] could not get my_q from current->se.\n");
 		return -1;
 	}
 
-	q1 = se->cfs_rq;
-	q2 = se->my_q;
+	q1 = se.cfs_rq;
+	q2 = se.my_q;
 
 	printk("[get_level_alloc] is q1 == q2? %s\n", (q1 == q2 ? "YES" : "NO"));
 
