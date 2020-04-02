@@ -868,7 +868,6 @@ struct rq {
 
 	atomic_t		nr_iowait;
 
-
 #ifdef CONFIG_SMP
 	struct root_domain	*rd;
 	struct sched_domain	*sd;
@@ -1640,9 +1639,6 @@ struct sched_class {
 	bool (*yield_to_task)(struct rq *rq, struct task_struct *p, bool preempt);
 
 	void (*check_preempt_curr)(struct rq *rq, struct task_struct *p, int flags);
-
-	// cop4600
-	unsigned int current_level;
 
 	/*
 	 * It is the responsibility of the pick_next_task() method that will
