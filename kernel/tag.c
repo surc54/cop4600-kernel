@@ -3,6 +3,8 @@
 #include <linux/printk.h>
 #include <linux/capability.h>
 
+extern const struct sched_class fair_sched_class;
+
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
         struct task_struct *item = find_task_by_vpid(givenPid);
@@ -86,6 +88,41 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
+	unsigned int cur_lvl;
+	struct sched_entity se;
+	struct cfs_rq q1, q2;
+
+	if (!current) {
+		printk("[get_level_alloc] could not get current process.\n");
+		return -1;
+	}
+
+	if (!current->se) {
+		printk("[get_level_alloc] could not get sched_entity from current.\n");
+		return -1;
+	}
+
+	se = current->se;
+
+	if (!se->cfs_rq) {
+		printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
+		return -1;
+	}
+
+	if (!se->my_q) {
+		printk("[get_level_alloc] could not get my_q from current->se.\n");
+		return -1;
+	}
+
+	q1 = se->cfs_rq;
+	q2 = se->my_q;
+
+	printk("[get_level_alloc] is q1 == q2? %s\n", (q1 == q2 ? "YES" : "NO"));
+
+	cur_lvl = q1->current_level;
+
+	printk("[get_level_alloc] got current_level of %u (q2 %u)\n", cur_lvl, q2->current_level);
+
 	printk("get_level_alloc called!\n");
 	return 0;
 }
