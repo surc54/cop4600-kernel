@@ -3,6 +3,7 @@
 #include <linux/printk.h>
 #include <linux/capability.h>
 
+struct rq;
 struct cfs_rq;
 
 SYSCALL_DEFINE1(get_tag, int, givenPid)
