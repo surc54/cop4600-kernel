@@ -129,12 +129,6 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 
 	cur_lvl = scheduler->current_level;
 
-	if (cur_lvl == 3) {
-		scheduler->current_level = 0;
-	} else {
-		scheduler->current_level = cur_lvl + 1;
-	}
-
 	printk("set_level_alloc called!\n");
 	return 0;
 }

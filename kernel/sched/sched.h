@@ -1633,6 +1633,8 @@ struct sched_class {
 	// cop4600
 	unsigned int current_level;
 
+	void (*increment_level) (void);
+
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*yield_task)   (struct rq *rq);
