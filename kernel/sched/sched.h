@@ -865,6 +865,10 @@ struct rq {
 
 	atomic_t		nr_iowait;
 
+	// cop4600
+	unsigned int current_level;
+
+
 #ifdef CONFIG_SMP
 	struct root_domain	*rd;
 	struct sched_domain	*sd;

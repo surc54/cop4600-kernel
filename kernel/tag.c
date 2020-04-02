@@ -86,6 +86,22 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
+	if (!current) {
+		printk("[get_level_alloc] could not get current process.\n");
+		return -1;
+	}
+
+	struct sched_class *scheduler = current->sched_class;
+
+	if (!sched_class) {
+		printk("[get_level_alloc] could not get sched_class from current.\n");
+		return -1;
+	}
+
+	unsigned int cur_lvl = sched_class->current_level;
+
+	printk("[get_level_alloc] got current_level of %u\n", cur_lvl);
+
 	printk("get_level_alloc called!\n");
 	return 0;
 }
