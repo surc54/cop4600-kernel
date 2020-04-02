@@ -3,6 +3,8 @@
 #include <linux/printk.h>
 #include <linux/capability.h>
 
+extern const struct sched_class fair_sched_class;
+
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
         struct task_struct *item = find_task_by_vpid(givenPid);
