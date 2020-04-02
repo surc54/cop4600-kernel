@@ -2,9 +2,10 @@
 #include <linux/syscalls.h>
 #include <linux/printk.h>
 #include <linux/capability.h>
+#include "./sched/sched.h"
 
-struct rq;
-struct cfs_rq;
+// struct rq;
+// struct cfs_rq;
 
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
