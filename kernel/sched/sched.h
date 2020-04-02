@@ -491,9 +491,6 @@ struct cfs_rq {
 	unsigned int		nr_running;
 	unsigned int		h_nr_running;
 
-	// cop4600
-	unsigned int current_level;
-
 	u64			exec_clock;
 	u64			min_vruntime;
 #ifndef CONFIG_64BIT
@@ -810,6 +807,9 @@ extern void rto_push_irq_work_func(struct irq_work *work);
 struct rq {
 	/* runqueue lock: */
 	raw_spinlock_t		lock;
+
+	// cop4600
+	unsigned int current_level;
 
 	/*
 	 * nr_running and cpu_load should be in the same cacheline because

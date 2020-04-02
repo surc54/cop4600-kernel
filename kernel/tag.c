@@ -91,7 +91,7 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
 	unsigned int cur_lvl;
 	struct sched_entity se;
-	struct cfs_rq *q1, *q2;
+	struct rq *q1, *q2;
 
 	if (!current) {
 		printk("[get_level_alloc] could not get current process.\n");
@@ -110,8 +110,8 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 		return -1;
 	}
 
-	q1 = se.cfs_rq;
-	q2 = se.my_q;
+	q1 = se.cfs_rq->rq;
+	q2 = se.my_q->rq;
 
 	printk("[get_level_alloc] is q1 == q2? %s\n", (q1 == q2 ? "YES" : "NO"));
 
