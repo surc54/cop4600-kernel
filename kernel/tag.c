@@ -1,5 +1,4 @@
 #include <linux/sched.h>
-#include <kernel/sched.h>
 #include <linux/syscalls.h>
 #include <linux/printk.h>
 #include <linux/capability.h>
