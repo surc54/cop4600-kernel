@@ -808,9 +808,6 @@ struct rq {
 	/* runqueue lock: */
 	raw_spinlock_t		lock;
 
-	// cop4600
-	unsigned int current_level;
-
 	/*
 	 * nr_running and cpu_load should be in the same cacheline because
 	 * remote CPUs use both these fields when doing load calculation.
@@ -1632,6 +1629,9 @@ extern const u32		sched_prio_to_wmult[40];
 
 struct sched_class {
 	const struct sched_class *next;
+
+	// cop4600
+	unsigned int current_level;
 
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);

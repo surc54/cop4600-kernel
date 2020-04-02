@@ -4,9 +4,6 @@
 #include <linux/capability.h>
 #include "./sched/sched.h"
 
-// struct rq;
-// struct cfs_rq;
-
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
         struct task_struct *item = find_task_by_vpid(givenPid);
@@ -91,34 +88,23 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
 	unsigned int cur_lvl;
-	struct sched_entity se;
-	struct rq *q1, *q2;
+	const struct sched_class *scheduler;
 
 	if (!current) {
 		printk("[get_level_alloc] could not get current process.\n");
 		return -1;
 	}
 
-	se = current->se;
+	scheduler = current->sched_class;
 
-	if (!se.cfs_rq) {
-		printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
+	if (!scheduler) {
+		printk("[get_level_alloc] could not get sched_class from current.\n");
 		return -1;
 	}
 
-	if (!se.my_q) {
-		printk("[get_level_alloc] could not get my_q from current->se.\n");
-		return -1;
-	}
+	cur_lvl = scheduler->current_level;
 
-	q1 = se.cfs_rq->rq;
-	q2 = se.my_q->rq;
-
-	printk("[get_level_alloc] is q1 == q2? %s\n", (q1 == q2 ? "YES" : "NO"));
-
-	cur_lvl = q1->current_level;
-
-	printk("[get_level_alloc] got current_level of %u (q2 %u)\n", cur_lvl, q2->current_level);
+	printk("[get_level_alloc] got current_level of %u\n", cur_lvl);
 
 	printk("get_level_alloc called!\n");
 	return 0;
