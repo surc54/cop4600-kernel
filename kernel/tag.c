@@ -112,6 +112,29 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 
 SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 {
+	unsigned int cur_lvl;
+	const struct sched_class *scheduler;
+
+	if (!current) {
+		printk("[set_level_alloc] could not get current process.\n");
+		return -1;
+	}
+
+	scheduler = current->sched_class;
+
+	if (!scheduler) {
+		printk("[set_level_alloc] could not get sched_class from current.\n");
+		return -1;
+	}
+
+	cur_lvl = scheduler->current_level;
+
+	if (cur_lvl == 3) {
+		scheduler->current_level = 0;
+	} else {
+		scheduler->current_level = cur_lvl + 1;
+	}
+
 	printk("set_level_alloc called!\n");
 	return 0;
 }
