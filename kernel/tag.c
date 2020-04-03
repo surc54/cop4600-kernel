@@ -127,7 +127,12 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 		return -1;
 	}
 
-	cur_lvl = scheduler->current_level;
+	if (!scheduler->increment_level) {
+		printk("[set_level_alloc] incrementLevel function does not exist!\n");
+		return -1;
+	}
+
+	scheduler->increment_level();
 
 	printk("set_level_alloc called!\n");
 	return 0;
