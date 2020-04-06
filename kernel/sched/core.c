@@ -7154,34 +7154,26 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 
 SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 {
-	// unsigned int total = sched_lvl.alloc_q0 
-	// 	+ sched_lvl.alloc_q1
-	// 	+ sched_lvl.alloc_q2
-	// 	+ sched_lvl.alloc_q3
-	// 	+ newAlloc;
+	unsigned int total;
 
-	// switch (level) {
-	// 	case 0: 
-	// 		total -= sched_lvl.alloc_q0;
-	// 		break;
-	// 	case 1:
-	// 		total -= sched_lvl.alloc_q1;
-	// 		break;
-	// 	case 2: 
-	// 		total -= sched_lvl.alloc_q2;
-	// 		break;
-	// 	case 3:
-	// 		total -= sched_lvl.alloc_q3;
-	// 		break;
-	// }
-
-	// if (total < 5) {
-	// 	return -1;
-	// }
-
+	if (level > 3) {
+		return -1;
+	}
 	
-	
-	printk("set_level_alloc called!\n");
+	total = sched_lvl.alloc[0] 
+		+ sched_lvl.alloc[1]
+		+ sched_lvl.alloc[2]
+		+ sched_lvl.alloc[3]
+		+ newAlloc
+		- sched_lvl.alloc[level];
+
+	if (total < 5) {
+		return -2;
+	}
+
+	sched_lvl.alloc[level] = newAlloc;
+
+	printk("set_level_alloc called (tot: %u, %u -> %u)!\n", total, level, newAlloc);
 	return 0;
 }
 
