@@ -87,40 +87,40 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
-	atomic_t cur_lvl;
-	const struct cfs_rq *cfs_rq;
-	const struct rq *rq;
-	const struct root_domain rd;
+	// atomic_t cur_lvl;
+	// const struct cfs_rq *cfs_rq;
+	// const struct rq *rq;
+	// const struct root_domain rd;
 
-	if (!current) {
-		printk("[get_level_alloc] could not get current process.\n");
-		return -1;
-	}
+	// if (!current) {
+	// 	printk("[get_level_alloc] could not get current process.\n");
+	// 	return -1;
+	// }
 
-	cfs_rq = current->se.cfs_rq;
+	// cfs_rq = current->se.cfs_rq;
 
-	if (!cfs_rq) {
-		printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
-		return -1;
-	}
+	// if (!cfs_rq) {
+	// 	printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
+	// 	return -1;
+	// }
 
-	rq = cfs_rq->rq;
+	// rq = cfs_rq->rq;
 
-	if (!rq) {
-		printk("[get_level_alloc] could not get rq from cfs_rq.\n");
-		return -1;
-	}
+	// if (!rq) {
+	// 	printk("[get_level_alloc] could not get rq from cfs_rq.\n");
+	// 	return -1;
+	// }
 
-	rd = rq->rd;
+	// rd = rq->rd;
 
-	if (!rd) {
-		printk("[get_level_alloc] could not get rd from rq.\n");
-		return -1;
-	}
+	// if (!rd) {
+	// 	printk("[get_level_alloc] could not get rd from rq.\n");
+	// 	return -1;
+	// }
 
-	cur_lvl = scheduler->current_level;
+	// cur_lvl = rd->current_level;
 
-	printk("[get_level_alloc] got current_level of %ld\n", atomic_read(&cur_lvl));
+	// printk("[get_level_alloc] got current_level of %ld\n", atomic_read(&cur_lvl));
 
 	printk("get_level_alloc called!\n");
 	return 0;
