@@ -46,10 +46,11 @@ struct {
 	atomic_t current_level;
 
 	// allocations
-	unsigned int alloc_q0;
-	unsigned int alloc_q1;
-	unsigned int alloc_q2;
-	unsigned int alloc_q3;
+	unsigned int alloc[4];
+	// unsigned int alloc_q0;
+	// unsigned int alloc_q1;
+	// unsigned int alloc_q2;
+	// unsigned int alloc_q3;
 } sched_lvl;
 
 /*
@@ -5985,10 +5986,14 @@ void __init sched_init(void)
 
 	// adithya
 	atomic_set(&sched_lvl.current_level, 3);
-	sched_lvl.alloc_q0 = 10;
-	sched_lvl.alloc_q1 = 10;
-	sched_lvl.alloc_q2 = 10;
-	sched_lvl.alloc_q3 = 10;
+	sched_lvl.alloc[0] = 10;
+	sched_lvl.alloc[1] = 11;
+	sched_lvl.alloc[2] = 12;
+	sched_lvl.alloc[3] = 13;
+	// sched_lvl.alloc_q0 = 10;
+	// sched_lvl.alloc_q1 = 10;
+	// sched_lvl.alloc_q2 = 10;
+	// sched_lvl.alloc_q3 = 10;
 
 	wait_bit_init();
 
@@ -7137,73 +7142,71 @@ const u32 sched_prio_to_wmult[40] = {
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
-	// atomic_t cur_lvl;
-	// const struct cfs_rq *cfs_rq;
-	// const struct rq *rq;
-	// const struct root_domain rd;
-
-	// if (!current) {
-	// 	printk("[get_level_alloc] could not get current process.\n");
+	// if (level > 3) {
+	// 	errno = 1;
 	// 	return -1;
 	// }
 
-	// cfs_rq = current->se.cfs_rq;
-
-	// if (!cfs_rq) {
-	// 	printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
-	// 	return -1;
+	// unsigned int ret;
+	// switch (level) {
+	// 	case 0: 
+	// 		ret = sched_lvl.alloc_q0;
+	// 		break;
+	// 	case 1:
+	// 		ret = sched_lvl.alloc_q1;
+	// 		break;
+	// 	case 2: 
+	// 		ret = sched_lvl.alloc_q2;
+	// 		break;
+	// 	case 3:
+	// 		ret = sched_lvl.alloc_q3;
+	// 		break;
 	// }
-
-	// rq = cfs_rq->rq;
-
-	// if (!rq) {
-	// 	printk("[get_level_alloc] could not get rq from cfs_rq.\n");
-	// 	return -1;
-	// }
-
-	// rd = rq->rd;
-
-	// if (!rd) {
-	// 	printk("[get_level_alloc] could not get rd from rq.\n");
-	// 	return -1;
-	// }
-
-	// cur_lvl = rd->current_level;
 
 	printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
-	printk("[get_level_alloc] got alloc of q0 of %d\n", sched_lvl.alloc_q0);
-	printk("[get_level_alloc] got alloc of q1 of %d\n", sched_lvl.alloc_q1);
-	printk("[get_level_alloc] got alloc of q2 of %d\n", sched_lvl.alloc_q2);
-	printk("[get_level_alloc] got alloc of q3 of %d\n", sched_lvl.alloc_q3);
+	printk("[get_level_alloc] got alloc of q0 of %d\n", sched_lvl.alloc[0]);
+	printk("[get_level_alloc] got alloc of q1 of %d\n", sched_lvl.alloc[1]);
+	printk("[get_level_alloc] got alloc of q2 of %d\n", sched_lvl.alloc[2]);
+	printk("[get_level_alloc] got alloc of q3 of %d\n", sched_lvl.alloc[3]);
+	// printk("[get_level_alloc] got alloc of q0 of %d\n", sched_lvl.alloc_q0);
+	// printk("[get_level_alloc] got alloc of q1 of %d\n", sched_lvl.alloc_q1);
+	// printk("[get_level_alloc] got alloc of q2 of %d\n", sched_lvl.alloc_q2);
+	// printk("[get_level_alloc] got alloc of q3 of %d\n", sched_lvl.alloc_q3);
 
 	printk("get_level_alloc called!\n");
-	return 0;
+	return ret;
 }
 
 SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 {
-	// unsigned int cur_lvl;
-	// const struct sched_class *scheduler;
+	// unsigned int total = sched_lvl.alloc_q0 
+	// 	+ sched_lvl.alloc_q1
+	// 	+ sched_lvl.alloc_q2
+	// 	+ sched_lvl.alloc_q3
+	// 	+ newAlloc;
 
-	// if (!current) {
-	// 	printk("[set_level_alloc] could not get current process.\n");
+	// switch (level) {
+	// 	case 0: 
+	// 		total -= sched_lvl.alloc_q0;
+	// 		break;
+	// 	case 1:
+	// 		total -= sched_lvl.alloc_q1;
+	// 		break;
+	// 	case 2: 
+	// 		total -= sched_lvl.alloc_q2;
+	// 		break;
+	// 	case 3:
+	// 		total -= sched_lvl.alloc_q3;
+	// 		break;
+	// }
+
+	// if (total < 5) {
+	// 	errno = 1;
 	// 	return -1;
 	// }
 
-	// scheduler = current->sched_class;
-
-	// if (!scheduler) {
-	// 	printk("[set_level_alloc] could not get sched_class from current.\n");
-	// 	return -1;
-	// }
-
-	// if (!scheduler->increment_level) {
-	// 	printk("[set_level_alloc] incrementLevel function does not exist!\n");
-	// 	return -1;
-	// }
-
-	// scheduler->increment_level();
-
+	
+	
 	printk("set_level_alloc called!\n");
 	return 0;
 }
