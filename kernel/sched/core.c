@@ -7147,7 +7147,7 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 	// 	return -1;
 	// }
 
-	unsigned int ret;
+	int ret = 0;
 	// switch (level) {
 	// 	case 0: 
 	// 		ret = sched_lvl.alloc_q0;
