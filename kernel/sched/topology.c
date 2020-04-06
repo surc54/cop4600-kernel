@@ -460,6 +460,8 @@ void sched_put_rd(struct root_domain *rd)
 
 static int init_rootdomain(struct root_domain *rd)
 {
+	atomic_set(rd->current_level, 4); // something out of range.
+
 	if (!zalloc_cpumask_var(&rd->span, GFP_KERNEL))
 		goto out;
 	if (!zalloc_cpumask_var(&rd->online, GFP_KERNEL))
@@ -503,9 +505,12 @@ out:
  */
 struct root_domain def_root_domain;
 
+// adithya - spooky moments!
 void init_defrootdomain(void)
 {
 	init_rootdomain(&def_root_domain);
+
+	atomic_set(&def_root_domain.current_level, 0); // set defroot's to 0 (all others will be out of range.)
 
 	atomic_set(&def_root_domain.refcount, 1);
 }

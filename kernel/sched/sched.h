@@ -735,6 +735,8 @@ struct root_domain {
 	cpumask_var_t		span;
 	cpumask_var_t		online;
 
+	atomic_t current_level; // adithya
+
 	/*
 	 * Indicate pullable load on at least one CPU, e.g:
 	 * - More than one runnable task
@@ -1629,11 +1631,6 @@ extern const u32		sched_prio_to_wmult[40];
 
 struct sched_class {
 	const struct sched_class *next;
-
-	// cop4600
-	unsigned int current_level;
-
-	void (*increment_level) (void);
 
 	void (*enqueue_task) (struct rq *rq, struct task_struct *p, int flags);
 	void (*dequeue_task) (struct rq *rq, struct task_struct *p, int flags);
