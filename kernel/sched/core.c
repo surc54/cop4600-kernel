@@ -7134,11 +7134,13 @@ const u32 sched_prio_to_wmult[40] = {
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
+	int ret;
+
 	if (level > 3) {
 		return -1;
 	}
 
-	int ret = sched_lvl.alloc[level];
+	sched_lvl.alloc[level];
 
 	printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
 	printk("[get_level_alloc] got alloc of q0 of %d\n", sched_lvl.alloc[0]);
