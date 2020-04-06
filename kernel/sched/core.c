@@ -7140,7 +7140,7 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 		return -1;
 	}
 
-	sched_lvl.alloc[level];
+	ret = sched_lvl.alloc[level];
 
 	printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
 	printk("[get_level_alloc] got alloc of q0 of %d\n", sched_lvl.alloc[0]);
@@ -7162,9 +7162,7 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 	
 	total = sched_lvl.alloc[0] 
 		+ sched_lvl.alloc[1] + sched_lvl.alloc[2]
-		+ sched_lvl.alloc[3] + newAlloc;
-	
-	total -= sched_lvl.alloc[level];
+		+ sched_lvl.alloc[3] + newAlloc - sched_lvl.alloc[level];
 
 	if (total < 5) {
 		return -2;
