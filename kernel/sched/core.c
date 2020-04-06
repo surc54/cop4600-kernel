@@ -47,10 +47,6 @@ struct {
 
 	// allocations
 	unsigned int alloc[4];
-	// unsigned int alloc_q0;
-	// unsigned int alloc_q1;
-	// unsigned int alloc_q2;
-	// unsigned int alloc_q3;
 } sched_lvl;
 
 /*
@@ -5990,10 +5986,6 @@ void __init sched_init(void)
 	sched_lvl.alloc[1] = 11;
 	sched_lvl.alloc[2] = 12;
 	sched_lvl.alloc[3] = 13;
-	// sched_lvl.alloc_q0 = 10;
-	// sched_lvl.alloc_q1 = 10;
-	// sched_lvl.alloc_q2 = 10;
-	// sched_lvl.alloc_q3 = 10;
 
 	wait_bit_init();
 
@@ -7142,36 +7134,18 @@ const u32 sched_prio_to_wmult[40] = {
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
-	// if (level > 3) {
-	// 	errno = 1;
-	// 	return -1;
-	// }
+	if (level > 3) {
+		errno = 1;
+		return -1;
+	}
 
-	int ret = 0;
-	// switch (level) {
-	// 	case 0: 
-	// 		ret = sched_lvl.alloc_q0;
-	// 		break;
-	// 	case 1:
-	// 		ret = sched_lvl.alloc_q1;
-	// 		break;
-	// 	case 2: 
-	// 		ret = sched_lvl.alloc_q2;
-	// 		break;
-	// 	case 3:
-	// 		ret = sched_lvl.alloc_q3;
-	// 		break;
-	// }
+	int ret = sched_lvl.alloc[level];
 
 	printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
 	printk("[get_level_alloc] got alloc of q0 of %d\n", sched_lvl.alloc[0]);
 	printk("[get_level_alloc] got alloc of q1 of %d\n", sched_lvl.alloc[1]);
 	printk("[get_level_alloc] got alloc of q2 of %d\n", sched_lvl.alloc[2]);
 	printk("[get_level_alloc] got alloc of q3 of %d\n", sched_lvl.alloc[3]);
-	// printk("[get_level_alloc] got alloc of q0 of %d\n", sched_lvl.alloc_q0);
-	// printk("[get_level_alloc] got alloc of q1 of %d\n", sched_lvl.alloc_q1);
-	// printk("[get_level_alloc] got alloc of q2 of %d\n", sched_lvl.alloc_q2);
-	// printk("[get_level_alloc] got alloc of q3 of %d\n", sched_lvl.alloc_q3);
 
 	printk("get_level_alloc called!\n");
 	return ret;
