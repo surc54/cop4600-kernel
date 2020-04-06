@@ -87,24 +87,40 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
-	unsigned int cur_lvl;
-	const struct sched_class *scheduler;
+	atomic_t cur_lvl;
+	const struct cfs_rq *cfs_rq;
+	const struct rq *rq;
+	const struct root_domain rd;
 
 	if (!current) {
 		printk("[get_level_alloc] could not get current process.\n");
 		return -1;
 	}
 
-	scheduler = current->sched_class;
+	cfs_rq = current->se.cfs_rq;
 
-	if (!scheduler) {
-		printk("[get_level_alloc] could not get sched_class from current.\n");
+	if (!cfs_rq) {
+		printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
+		return -1;
+	}
+
+	rq = cfs_rq->rq;
+
+	if (!rq) {
+		printk("[get_level_alloc] could not get rq from cfs_rq.\n");
+		return -1;
+	}
+
+	rd = rq->rd;
+
+	if (!rd) {
+		printk("[get_level_alloc] could not get rd from rq.\n");
 		return -1;
 	}
 
 	cur_lvl = scheduler->current_level;
 
-	printk("[get_level_alloc] got current_level of %u\n", cur_lvl);
+	printk("[get_level_alloc] got current_level of %ld\n", atomic_read(&cur_lvl));
 
 	printk("get_level_alloc called!\n");
 	return 0;
@@ -112,27 +128,27 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 
 SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 {
-	unsigned int cur_lvl;
-	const struct sched_class *scheduler;
+	// unsigned int cur_lvl;
+	// const struct sched_class *scheduler;
 
-	if (!current) {
-		printk("[set_level_alloc] could not get current process.\n");
-		return -1;
-	}
+	// if (!current) {
+	// 	printk("[set_level_alloc] could not get current process.\n");
+	// 	return -1;
+	// }
 
-	scheduler = current->sched_class;
+	// scheduler = current->sched_class;
 
-	if (!scheduler) {
-		printk("[set_level_alloc] could not get sched_class from current.\n");
-		return -1;
-	}
+	// if (!scheduler) {
+	// 	printk("[set_level_alloc] could not get sched_class from current.\n");
+	// 	return -1;
+	// }
 
-	if (!scheduler->increment_level) {
-		printk("[set_level_alloc] incrementLevel function does not exist!\n");
-		return -1;
-	}
+	// if (!scheduler->increment_level) {
+	// 	printk("[set_level_alloc] incrementLevel function does not exist!\n");
+	// 	return -1;
+	// }
 
-	scheduler->increment_level();
+	// scheduler->increment_level();
 
 	printk("set_level_alloc called!\n");
 	return 0;
