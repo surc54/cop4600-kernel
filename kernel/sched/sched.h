@@ -735,8 +735,6 @@ struct root_domain {
 	cpumask_var_t		span;
 	cpumask_var_t		online;
 
-	atomic_t current_level; // adithya
-
 	/*
 	 * Indicate pullable load on at least one CPU, e.g:
 	 * - More than one runnable task
