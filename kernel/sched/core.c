@@ -7161,11 +7161,8 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 	}
 	
 	total = sched_lvl.alloc[0] 
-		+ sched_lvl.alloc[1]
-		+ sched_lvl.alloc[2]
-		+ sched_lvl.alloc[3]
-		+ newAlloc
-		- sched_lvl.alloc[level];
+		+ sched_lvl.alloc[1] + sched_lvl.alloc[2]
+		+ sched_lvl.alloc[3] + newAlloc - sched_lvl.alloc[level];
 
 	if (total < 5) {
 		return -2;
