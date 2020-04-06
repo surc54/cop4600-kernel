@@ -7135,7 +7135,6 @@ const u32 sched_prio_to_wmult[40] = {
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 {
 	if (level > 3) {
-		errno = 1;
 		return -1;
 	}
 
@@ -7175,7 +7174,6 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 	// }
 
 	// if (total < 5) {
-	// 	errno = 1;
 	// 	return -1;
 	// }
 
