@@ -40,6 +40,18 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
+// adithya
+struct {
+	// current level in scheduler
+	atomic_t current_level;
+
+	// allocations
+	unsigned int alloc_q0;
+	unsigned int alloc_q1;
+	unsigned int alloc_q2;
+	unsigned int alloc_q3;
+} sched_lvl;
+
 /*
  * Number of tasks to iterate in a single balance run.
  * Limited because this is done with IRQs disabled.
@@ -5971,6 +5983,13 @@ void __init sched_init(void)
 	int i, j;
 	unsigned long alloc_size = 0, ptr;
 
+	// adithya
+	atomic_set(&sched_lvl.current_level, 3);
+	sched_lvl.alloc_q0 = 10;
+	sched_lvl.alloc_q1 = 10;
+	sched_lvl.alloc_q2 = 10;
+	sched_lvl.alloc_q3 = 10;
+
 	wait_bit_init();
 
 #ifdef CONFIG_FAIR_GROUP_SCHED
@@ -7115,5 +7134,74 @@ const u32 sched_prio_to_wmult[40] = {
  /*  10 */  39045157,  49367440,  61356676,  76695844,  95443717,
  /*  15 */ 119304647, 148102320, 186737708, 238609294, 286331153,
 };
+
+SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
+{
+	// atomic_t cur_lvl;
+	// const struct cfs_rq *cfs_rq;
+	// const struct rq *rq;
+	// const struct root_domain rd;
+
+	// if (!current) {
+	// 	printk("[get_level_alloc] could not get current process.\n");
+	// 	return -1;
+	// }
+
+	// cfs_rq = current->se.cfs_rq;
+
+	// if (!cfs_rq) {
+	// 	printk("[get_level_alloc] could not get cfs_rq from current->se.\n");
+	// 	return -1;
+	// }
+
+	// rq = cfs_rq->rq;
+
+	// if (!rq) {
+	// 	printk("[get_level_alloc] could not get rq from cfs_rq.\n");
+	// 	return -1;
+	// }
+
+	// rd = rq->rd;
+
+	// if (!rd) {
+	// 	printk("[get_level_alloc] could not get rd from rq.\n");
+	// 	return -1;
+	// }
+
+	// cur_lvl = rd->current_level;
+
+	printk("[get_level_alloc] got current_level of %ld\n", atomic_read(&sched_lvl.current_level));
+
+	printk("get_level_alloc called!\n");
+	return 0;
+}
+
+SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
+{
+	// unsigned int cur_lvl;
+	// const struct sched_class *scheduler;
+
+	// if (!current) {
+	// 	printk("[set_level_alloc] could not get current process.\n");
+	// 	return -1;
+	// }
+
+	// scheduler = current->sched_class;
+
+	// if (!scheduler) {
+	// 	printk("[set_level_alloc] could not get sched_class from current.\n");
+	// 	return -1;
+	// }
+
+	// if (!scheduler->increment_level) {
+	// 	printk("[set_level_alloc] incrementLevel function does not exist!\n");
+	// 	return -1;
+	// }
+
+	// scheduler->increment_level();
+
+	printk("set_level_alloc called!\n");
+	return 0;
+}
 
 #undef CREATE_TRACE_POINTS
