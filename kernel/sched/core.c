@@ -41,16 +41,16 @@ const_debug unsigned int sysctl_sched_features =
 #endif
 
 // adithya
-struct {
-	// current level in scheduler
-	atomic_t current_level;
+// struct {
+// 	// current level in scheduler
+// 	atomic_t current_level;
 
-	// allocations
-	unsigned int alloc_q0;
-	unsigned int alloc_q1;
-	unsigned int alloc_q2;
-	unsigned int alloc_q3;
-} sched_lvl;
+// 	// allocations
+// 	unsigned int alloc_q0;
+// 	unsigned int alloc_q1;
+// 	unsigned int alloc_q2;
+// 	unsigned int alloc_q3;
+// } sched_lvl;
 
 /*
  * Number of tasks to iterate in a single balance run.
@@ -5984,11 +5984,11 @@ void __init sched_init(void)
 	unsigned long alloc_size = 0, ptr;
 
 	// adithya
-	atomic_set(&sched_lvl.current_level, 3);
-	sched_lvl.alloc_q0 = 10;
-	sched_lvl.alloc_q1 = 10;
-	sched_lvl.alloc_q2 = 10;
-	sched_lvl.alloc_q3 = 10;
+	// atomic_set(&sched_lvl.current_level, 3);
+	// sched_lvl.alloc_q0 = 10;
+	// sched_lvl.alloc_q1 = 10;
+	// sched_lvl.alloc_q2 = 10;
+	// sched_lvl.alloc_q3 = 10;
 
 	wait_bit_init();
 
@@ -7170,7 +7170,8 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 
 	// cur_lvl = rd->current_level;
 
-	printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
+	// printk("[get_level_alloc] got current_level of %d\n", sched_lvl.alloc_q1);
+	// printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
 
 	printk("get_level_alloc called!\n");
 	return 0;

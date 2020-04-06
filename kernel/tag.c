@@ -2,7 +2,6 @@
 #include <linux/syscalls.h>
 #include <linux/printk.h>
 #include <linux/capability.h>
-#include "./sched/sched.h"
 
 SYSCALL_DEFINE1(get_tag, int, givenPid)
 {
@@ -84,4 +83,3 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
         return tag;
 }
-
