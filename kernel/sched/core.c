@@ -7170,7 +7170,7 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 
 	// cur_lvl = rd->current_level;
 
-	printk("[get_level_alloc] got current_level of %ld\n", atomic_read(&sched_lvl.current_level));
+	printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
 
 	printk("get_level_alloc called!\n");
 	return 0;
