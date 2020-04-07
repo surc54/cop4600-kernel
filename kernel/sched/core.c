@@ -3102,19 +3102,19 @@ void scheduler_tick(void)
 
 			deac = sched_lvl.head;
 
-			// while (deac != NULL) {
-			// 	rq_s = task_rq(deac);
+			while (deac != NULL) {
+				rq_s = task_rq(deac);
 
-			// 	if (!rq_s) {
-			// 		printk("[SURC]: Could not find rq for deac-task!!\n");
-			// 		continue;
-			// 	}
+				if (!rq_s) {
+					printk("[SURC]: Could not find rq for deac-task!!\n");
+					continue;
+				}
 
-			// 	activate_task(rq_s, deac, ENQUEUE_WAKEUP);
-			// 	temp = deac->surc_deact_next;
-			// 	deac->surc_deact_next = NULL;
-			// 	deac = temp;
-			// }
+				// activate_task(rq_s, deac, ENQUEUE_WAKEUP);
+				temp = deac->surc_deact_next;
+				deac->surc_deact_next = NULL;
+				deac = temp;
+			}
 
 			for_each_cpu(i, false) {
 				resched_cpu(i);
