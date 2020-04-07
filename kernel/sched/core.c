@@ -3067,6 +3067,10 @@ void scheduler_tick(void)
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
 
+	if (sched_lvl.last_change == 0) {
+		sched_lvl.last_change = ktime_get();
+	}
+
 	sched_clock_tick();
 
 	rq_lock(rq, &rf);
@@ -5986,7 +5990,8 @@ void __init sched_init(void)
 
 	// adithya
 	atomic_set(&sched_lvl.current_level, 3);
-	sched_lvl.last_change = ktime_get();
+	// sched_lvl.last_change = ktime_get(); // causes crash
+	sched_lvl.last_change = 0;
 	sched_lvl.alloc[0] = 10;
 	sched_lvl.alloc[1] = 11;
 	sched_lvl.alloc[2] = 12;
