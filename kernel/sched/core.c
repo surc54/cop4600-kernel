@@ -3073,7 +3073,7 @@ void scheduler_tick(void)
 		long long int now = ktime_get();
 		long long int nowMs = now / 1000000;
 		long long int last = sched_lvl.last_change / 1000000;
-		int cur = atomic_read(sched_lvl.current_level);
+		int cur = atomic_read(&sched_lvl.current_level);
 		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
 				cur = 0;
@@ -3081,7 +3081,7 @@ void scheduler_tick(void)
 				cur = cur + 1;
 			}
 
-			atomic_set(sched_lvl.current_level, cur);
+			atomic_set(&sched_lvl.current_level, cur);
 
 			sched_lvl.last_change = now;
 
