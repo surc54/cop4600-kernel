@@ -3087,7 +3087,7 @@ void scheduler_tick(void)
 		int i = 0;
 		struct task_struct *deac;
 		struct task_struct *temp;
-		struct rq *rq;
+		struct rq *rq_s;
 
 		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
@@ -3103,14 +3103,14 @@ void scheduler_tick(void)
 			deac = sched_lvl.head;
 
 			while (deac != NULL) {
-				rq = task_rq(deac);
+				rq_s = task_rq(deac);
 
-				if (!rq) {
+				if (!rq_s) {
 					printk("[SURC]: Could not find rq for deac-task!!\n");
 					continue;
 				}
 
-				activate_task(rq, deac, ENQUEUE_WAKEUP);
+				activate_task(rq_s, deac, ENQUEUE_WAKEUP);
 				temp = deac->surc_deact_next;
 				deac->surc_deact_next = NULL;
 				deac = temp;
