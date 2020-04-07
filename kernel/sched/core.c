@@ -41,6 +41,21 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
+struct surc_deact_node {
+	struct surc_deact_node *next;
+	struct task_struct *p;
+	struct rq *rq;
+};
+
+struct surc_deact_node *add_to_deact_list(struct surc_deact_node *head, struct rq *rq, struct task_struct *p)
+{
+	surc_deact_node n;
+	n.next = head;
+	n.p = p;
+	n.rq = rq;
+	return &n;
+}
+
 // adithya
 struct {
 	// current level in scheduler
@@ -48,6 +63,9 @@ struct {
 
 	// last level change
 	long long int last_change;
+
+	// deactivated list
+	struct surc_deact_node *head;
 
 	// allocations
 	unsigned int alloc[4];
@@ -3088,6 +3106,15 @@ void scheduler_tick(void)
 
 			sched_lvl.last_change = now;
 
+			struct surc_deact_node *sdn = sched_lvl.head;
+
+			while (sdn != NULL) {
+				activate_task(sdn->rq, sdn->p, ENQUEUE_WAKEUP);
+				sdn = sdn->next;
+			}
+
+			sched_lvl.head = NULL;
+
 			for_each_cpu(i, false) {
 				resched_cpu(i);
 			}
@@ -3424,7 +3451,8 @@ aint_it_chief_fair:
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
 		else if ((p->tag & 3) != cur_lvl) {
-			deactivate_task(rq, p, 0); // remove from rq
+			sched_lvl.head = add_to_deact_list(sched_lvl.head, rq, p);
+			deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 			goto aint_it_chief_fair;
 		}
 
@@ -3438,7 +3466,8 @@ again:
 			if (unlikely(p == RETRY_TASK))
 				goto again;
 			else if ((p->tag & 3) != cur_lvl) {
-				deactivate_task(rq, p, 0); // remove from rq
+				sched_lvl.head = add_to_deact_list(sched_lvl.head, rq, p);
+				deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 				goto again;
 			}
 			return p;
@@ -6033,6 +6062,8 @@ void __init sched_init(void)
 	sched_lvl.alloc[1] = 250;
 	sched_lvl.alloc[2] = 250;
 	sched_lvl.alloc[3] = 500;
+
+	sched_lvl.head = NULL;
 
 	wait_bit_init();
 
