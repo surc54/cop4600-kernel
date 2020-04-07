@@ -3455,6 +3455,8 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
+		else if (p->normal_prio == 0)
+			printk("[SURC]: Chose 0 prio task!!\n");
 		// else if ((p->tag & 3) != cur_lvl) {
 			// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
