@@ -3110,6 +3110,7 @@ void scheduler_tick(void)
 					continue;
 				}
 
+				wake_up_process(deac);
 				// activate_task(rq_s, deac, ENQUEUE_WAKEUP);
 				temp = deac->surc_deact_next;
 				deac->surc_deact_next = NULL;
