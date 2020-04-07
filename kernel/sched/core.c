@@ -49,7 +49,7 @@ struct surc_deact_node {
 
 struct surc_deact_node *add_to_deact_list(struct surc_deact_node *head, struct rq *rq, struct task_struct *p)
 {
-	surc_deact_node n;
+	struct surc_deact_node n;
 	n.next = head;
 	n.p = p;
 	n.rq = rq;
@@ -3094,6 +3094,7 @@ void scheduler_tick(void)
 		long long int last = sched_lvl.last_change / 1000000;
 		int cur = atomic_read(&sched_lvl.current_level);
 		int i = 0;
+		struct surc_deact_node *sdn;
 
 		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
@@ -3106,7 +3107,7 @@ void scheduler_tick(void)
 
 			sched_lvl.last_change = now;
 
-			struct surc_deact_node *sdn = sched_lvl.head;
+			sdn = sched_lvl.head;
 
 			while (sdn != NULL) {
 				activate_task(sdn->rq, sdn->p, ENQUEUE_WAKEUP);
