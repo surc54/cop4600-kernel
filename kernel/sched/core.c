@@ -46,6 +46,9 @@ struct {
 	// current level in scheduler
 	atomic_t current_level;
 
+	// last level change
+	long long int last_change;
+
 	// allocations
 	unsigned int alloc[4];
 } sched_lvl;
@@ -5983,6 +5986,7 @@ void __init sched_init(void)
 
 	// adithya
 	atomic_set(&sched_lvl.current_level, 3);
+	last_change = ktime_get();
 	sched_lvl.alloc[0] = 10;
 	sched_lvl.alloc[1] = 11;
 	sched_lvl.alloc[2] = 12;
@@ -7143,13 +7147,15 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 
 	ret = sched_lvl.alloc[level];
 
-	printk("[get_level_alloc] got current_level of %d\n", atomic_read(&sched_lvl.current_level));
-	printk("[get_level_alloc] got alloc of q0 of %d %llu\n", sched_lvl.alloc[0], ktime_get());
-	printk("[get_level_alloc] got alloc of q1 of %d\n", sched_lvl.alloc[1]);
-	printk("[get_level_alloc] got alloc of q2 of %d\n", sched_lvl.alloc[2]);
-	printk("[get_level_alloc] got alloc of q3 of %d\n", sched_lvl.alloc[3]);
+	printk("get_level_alloc: got current_level of %d\n", atomic_read(&sched_lvl.current_level));
+	printk("get_level_alloc: got alloc of q0 of %d\n", sched_lvl.alloc[0]);
+	printk("get_level_alloc: got alloc of q1 of %d\n", sched_lvl.alloc[1]);
+	printk("get_level_alloc: got alloc of q2 of %d\n", sched_lvl.alloc[2]);
+	printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
+	printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
+	printk("[SURC] Last time level changed: %llu\n", sched_lvl.last_change);
 
-	printk("get_level_alloc called!\n");
+	printk("get_level_alloc: Called!\n");
 	return ret;
 }
 
@@ -7171,7 +7177,7 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 
 	sched_lvl.alloc[level] = newAlloc;
 
-	printk("set_level_alloc called (tot: %u, %u -> %u)!\n", total, level, newAlloc);
+	printk("set_level_alloc: Called (tot: %u, %u -> %u)!\n", total, level, newAlloc);
 	return 0;
 }
 
