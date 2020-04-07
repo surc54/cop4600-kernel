@@ -3401,6 +3401,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	const struct sched_class *class;
 	struct task_struct *p;
+	int cur_lvl = atomic_read(&sched_lvl.current_level);
 
 	// adithya
 
@@ -3422,7 +3423,7 @@ aint_it_chief_fair:
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if ((p->tag & 3) != sched_lvl.current_level) {
+		else if ((p->tag & 3) != cur_lvl) {
 			deactivate_task(rq, p, 0); // remove from rq
 			goto aint_it_chief_fair;
 		}
@@ -3436,7 +3437,7 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
-			else if ((p->tag & 3) != sched_lvl.current_level) {
+			else if ((p->tag & 3) != cur_lvl) {
 				deactivate_task(rq, p, 0); // remove from rq
 				goto again;
 			}
