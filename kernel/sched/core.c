@@ -3110,7 +3110,7 @@ void scheduler_tick(void)
 					continue;
 				}
 
-				wake_up_process(deac);
+				// wake_up_process(deac);
 				// activate_task(rq_s, deac, ENQUEUE_WAKEUP);
 				temp = deac->surc_deact_next;
 				deac->surc_deact_next = NULL;
@@ -3454,8 +3454,8 @@ aint_it_chief_fair:
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
 		else if ((p->tag & 3) != cur_lvl) {
 			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-			deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-			goto aint_it_chief_fair;
+			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
+			// goto aint_it_chief_fair;
 		}
 
 		return p;
@@ -3469,8 +3469,8 @@ again:
 				goto again;
 			else if ((p->tag & 3) != cur_lvl) {
 				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-				deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-				goto again;
+				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
+				// goto again;
 			}
 			return p;
 		}
