@@ -8,7 +8,7 @@
 #include "sched.h"
 
 #include <linux/nospec.h>
-#include <ktime.h>
+#include <linux/ktime.h>
 
 #include <linux/kcov.h>
 
