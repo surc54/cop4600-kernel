@@ -3402,6 +3402,8 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	const struct sched_class *class;
 	struct task_struct *p;
 
+	// adithya
+
 	/*
 	 * Optimization: we know that if all tasks are in the fair class we can
 	 * call that function directly, but only if the @prev task wasn't of a
@@ -3412,6 +3414,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		    prev->sched_class == &fair_sched_class) &&
 		   rq->nr_running == rq->cfs.h_nr_running)) {
 
+aint_it_chief_fair:
 		p = fair_sched_class.pick_next_task(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
 			goto again;
@@ -3419,6 +3422,10 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
+		else if ((p->tag & 3) != sched_lvl.current_level) {
+			deactivate_task(rq, p, 0); // remove from rq
+			goto aint_it_chief_fair;
+		}
 
 		return p;
 	}
@@ -3429,6 +3436,10 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
+			else if ((p->tag & 3) != sched_lvl.current_level) {
+				deactivate_task(rq, p, 0); // remove from rq
+				goto again;
+			}
 			return p;
 		}
 	}
@@ -6017,10 +6028,10 @@ void __init sched_init(void)
 	atomic_set(&sched_lvl.current_level, 3);
 	// sched_lvl.last_change = ktime_get(); // causes crash
 	sched_lvl.last_change = 0;
-	sched_lvl.alloc[0] = 10;
-	sched_lvl.alloc[1] = 11;
-	sched_lvl.alloc[2] = 12;
-	sched_lvl.alloc[3] = 13;
+	sched_lvl.alloc[0] = 1000;
+	sched_lvl.alloc[1] = 250;
+	sched_lvl.alloc[2] = 250;
+	sched_lvl.alloc[3] = 500;
 
 	wait_bit_init();
 
