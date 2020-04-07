@@ -41,19 +41,10 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
-struct surc_deact_node {
-	struct surc_deact_node *next;
-	struct task_struct *p;
-	struct rq *rq;
-};
-
-struct surc_deact_node *add_to_deact_list(struct surc_deact_node *head, struct rq *rq, struct task_struct *p)
+struct task_struct *add_to_deact_list(struct task_struct *head, struct task_struct *p)
 {
-	struct surc_deact_node n;
-	n.next = head;
-	n.p = p;
-	n.rq = rq;
-	return &n;
+	p->surc_deact_next = head;
+	return p;
 }
 
 // adithya
@@ -65,7 +56,7 @@ struct {
 	long long int last_change;
 
 	// deactivated list
-	struct surc_deact_node *head;
+	struct task_struct *head;
 
 	// allocations
 	unsigned int alloc[4];
@@ -3094,7 +3085,9 @@ void scheduler_tick(void)
 		long long int last = sched_lvl.last_change / 1000000;
 		int cur = atomic_read(&sched_lvl.current_level);
 		int i = 0;
-		struct surc_deact_node *sdn;
+		struct task_struct *deac;
+		struct task_struct *temp;
+		struct rq *rq;
 
 		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
@@ -3107,14 +3100,21 @@ void scheduler_tick(void)
 
 			sched_lvl.last_change = now;
 
-			sdn = sched_lvl.head;
+			deac = sched_lvl.head;
 
-			while (sdn != NULL) {
-				activate_task(sdn->rq, sdn->p, ENQUEUE_WAKEUP);
-				sdn = sdn->next;
+			while (deac != NULL) {
+				rq = task_rq(deac);
+
+				if (!rq) {
+					printk("[SURC]: Could not find rq for deac-task!!\n");
+					continue;
+				}
+
+				activate_task(rq, deac, ENQUEUE_WAKEUP);
+				temp = deac->surc_deact_next;
+				deac->surc_deact_next = NULL;
+				deac = temp;
 			}
-
-			sched_lvl.head = NULL;
 
 			for_each_cpu(i, false) {
 				resched_cpu(i);
@@ -3452,7 +3452,7 @@ aint_it_chief_fair:
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
 		else if ((p->tag & 3) != cur_lvl) {
-			sched_lvl.head = add_to_deact_list(sched_lvl.head, rq, p);
+			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 			deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 			goto aint_it_chief_fair;
 		}
@@ -3467,7 +3467,7 @@ again:
 			if (unlikely(p == RETRY_TASK))
 				goto again;
 			else if ((p->tag & 3) != cur_lvl) {
-				sched_lvl.head = add_to_deact_list(sched_lvl.head, rq, p);
+				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 				deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 				goto again;
 			}

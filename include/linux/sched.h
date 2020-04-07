@@ -1215,6 +1215,7 @@ struct task_struct {
 	 * they are included in the randomized portion of task_struct.
 	 */
 	unsigned int			tag;
+	struct task_struct		*surc_deact_next;
 	randomized_struct_fields_end
 
 	/* CPU-specific state of this task: */
