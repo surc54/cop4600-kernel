@@ -818,6 +818,9 @@ static inline int normal_prio(struct task_struct *p)
 		prio = MAX_DL_PRIO-1;
 	else if (task_has_rt_policy(p))
 		prio = MAX_RT_PRIO-1 - p->rt_priority;
+	// adithya
+	else if ((p->tag & 3) != atomic_read(sched_lvl.current_level))
+		prio = 0;
 	else
 		prio = __normal_prio(p);
 	return prio;
@@ -3085,9 +3088,9 @@ void scheduler_tick(void)
 		long long int last = sched_lvl.last_change / 1000000;
 		int cur = atomic_read(&sched_lvl.current_level);
 		int i = 0;
-		struct task_struct *deac;
-		struct task_struct *temp;
-		struct rq *rq_s;
+		// struct task_struct *deac;
+		// struct task_struct *temp;
+		// struct rq *rq_s;
 
 		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
@@ -3100,22 +3103,22 @@ void scheduler_tick(void)
 
 			sched_lvl.last_change = now;
 
-			deac = sched_lvl.head;
+			// deac = sched_lvl.head;
 
-			while (deac != NULL) {
-				rq_s = task_rq(deac);
+			// while (deac != NULL) {
+			// 	rq_s = task_rq(deac);
 
-				if (!rq_s) {
-					printk("[SURC]: Could not find rq for deac-task!!\n");
-					continue;
-				}
+			// 	if (!rq_s) {
+			// 		printk("[SURC]: Could not find rq for deac-task!!\n");
+			// 		continue;
+			// 	}
 
-				// wake_up_process(deac);
-				// activate_task(rq_s, deac, ENQUEUE_WAKEUP);
-				temp = deac->surc_deact_next;
-				deac->surc_deact_next = NULL;
-				deac = temp;
-			}
+			// 	// wake_up_process(deac);
+			// 	// activate_task(rq_s, deac, ENQUEUE_WAKEUP);
+			// 	temp = deac->surc_deact_next;
+			// 	deac->surc_deact_next = NULL;
+			// 	deac = temp;
+			// }
 
 			for_each_cpu(i, false) {
 				resched_cpu(i);
@@ -3452,11 +3455,11 @@ aint_it_chief_fair:
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if ((p->tag & 3) != cur_lvl) {
-			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
+		// else if ((p->tag & 3) != cur_lvl) {
+			// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 			// goto aint_it_chief_fair;
-		}
+		// }
 
 		return p;
 	}
