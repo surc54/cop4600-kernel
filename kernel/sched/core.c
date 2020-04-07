@@ -3067,6 +3067,7 @@ void scheduler_tick(void)
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
 
+	// adithya
 	if (sched_lvl.last_change == 0) {
 		sched_lvl.last_change = ktime_get();
 	} else {
@@ -3074,6 +3075,8 @@ void scheduler_tick(void)
 		long long int nowMs = now / 1000000;
 		long long int last = sched_lvl.last_change / 1000000;
 		int cur = atomic_read(&sched_lvl.current_level);
+		int i = 0;
+
 		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
 				cur = 0;
@@ -3084,6 +3087,10 @@ void scheduler_tick(void)
 			atomic_set(&sched_lvl.current_level, cur);
 
 			sched_lvl.last_change = now;
+
+			for_each_cpu(i, false) {
+				resched_cpu(i);
+			}
 
 			printk("[SURC] Switch level to %u\n", cur);
 		}
