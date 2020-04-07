@@ -3069,6 +3069,21 @@ void scheduler_tick(void)
 
 	if (sched_lvl.last_change == 0) {
 		sched_lvl.last_change = ktime_get();
+	} else {
+		long long int now = ktime_get();
+		long long int nowMs = now / 1000000;
+		long long int last = sched_lvl.last_change / 1000000;
+		if (nowMs - last > sched_lvl.alloc[sched_lvl.current_level]) {
+			if (sched_lvl.current_level >= 3) {
+				sched_lvl.current_level = 0;
+			} else {
+				sched_lvl.current_level = sched_lvl.current_level + 1;
+			}
+
+			sched_lvl.last_change = now;
+
+			printk("[SURC] Switch level to %u\n", sched_lvl.current_level);
+		}
 	}
 
 	sched_clock_tick();
