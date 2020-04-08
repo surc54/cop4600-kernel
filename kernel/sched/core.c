@@ -3110,6 +3110,7 @@ void scheduler_tick(void)
 				if (!rq_s) {
 					printk("[SURC]: Could not find rq for deac-task!!\n");
 				} else {
+					printk("[SURC]: Waking %u\n", deac->pid);
 					activate_task(rq_s, deac, ENQUEUE_WAKEUP);
 				}
 
