@@ -819,8 +819,8 @@ static inline int normal_prio(struct task_struct *p)
 	else if (task_has_rt_policy(p))
 		prio = MAX_RT_PRIO-1 - p->rt_priority;
 	// adithya
-	else if (p->sched_class != &idle_sched_class && (p->tag & 3) != atomic_read(&sched_lvl.current_level))
-		prio = -1;
+	else if ((p->tag & 3) != atomic_read(&sched_lvl.current_level) && p->pid != 1)
+		prio = 0;
 	else
 		prio = __normal_prio(p);
 	return prio;
@@ -3437,7 +3437,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	const struct sched_class *class;
 	struct task_struct *p;
-	// int cur_lvl = atomic_read(&sched_lvl.current_level);
+	int cur_lvl = atomic_read(&sched_lvl.current_level);
 
 	// adithya
 
@@ -3455,14 +3455,14 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		if (unlikely(p == RETRY_TASK))
 			goto again;
 
-		/* Assumes fair_sched_class->next == idle_sched_class */
 aint_it_chief_fair:
+		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if (p->normal_prio == -1) {
-			printk("[SURC]: Chose 0 prio task (%u)!!\n", p->pid);
-			// p = NULL;
-			// goto aint_it_chief_fair;
+		else if (p->normal_prio == 0) {
+			// printk("[SURC]: Chose 0 prio task %u!!\n", p->pid);
+			p = NULL;
+			goto aint_it_chief_fair;
 		}
 		// else if ((p->tag & 3) != cur_lvl) {
 			// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
@@ -3479,13 +3479,8 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
-			// else if (p->sched_class == &idle_sched_class || p->normal_prio != -1)
+			else if (p->sched_class == &idle_sched_class || p->normal_prio != 0)
 				return p;
-			// else if ((p->tag & 3) != cur_lvl) {
-				// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-				// goto again;
-			// }
 		}
 	}
 
