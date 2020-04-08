@@ -3085,6 +3085,7 @@ void scheduler_tick(void)
 		long long int last = sched_lvl.last_change / 1000000;
 		int cur = atomic_read(&sched_lvl.current_level);
 		int i = 0;
+		int j = 0;
 		struct task_struct *deac;
 		struct task_struct *temp;
 		struct rq *rq_s;
@@ -3104,6 +3105,7 @@ void scheduler_tick(void)
 
 			while (deac != NULL) {
 				rq_s = task_rq(deac);
+				j++;
 
 				if (!rq_s) {
 					printk("[SURC]: Could not find rq for deac-task!!\n");
@@ -3120,7 +3122,7 @@ void scheduler_tick(void)
 				resched_cpu(i);
 			}
 
-			printk("[SURC] Switch level to %u\n", cur);
+			printk("[SURC] Switch level to %u (%d woken)\n", cur, j);
 		}
 	}
 
