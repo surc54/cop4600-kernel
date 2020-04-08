@@ -3107,12 +3107,13 @@ void scheduler_tick(void)
 				// rq_s = task_rq(deac);
 				j++;
 
-				if (!rq) {
-					printk("[SURC]: Could not find rq for deac-task!!\n");
-				} else {
+				// if (!rq) {
+					// printk("[SURC]: Could not find rq for deac-task!!\n");
+				// } else {
 					printk("[SURC]: Waking %u\n", deac->pid);
-					activate_task(rq, deac, ENQUEUE_WAKEUP);
-				}
+					send_sig(SIGCONT, deac, 0);
+					// activate_task(rq, deac, ENQUEUE_WAKEUP);
+				// }
 
 				temp = deac->surc_deact_next;
 				deac->surc_deact_next = NULL;
@@ -3456,7 +3457,8 @@ aint_it_chief_fair:
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
 		else if (p->pid != 1 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
 			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-			deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
+			send_sig(SIGSTOP, deac, 0);
+			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 			goto aint_it_chief_fair;
 		}
 
@@ -3471,7 +3473,8 @@ again:
 				goto again;
 			else if (p->pid != 1 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
 				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-				deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
+				send_sig(SIGSTOP, deac, 0);
+				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 				goto again;
 			}
 			return p;
