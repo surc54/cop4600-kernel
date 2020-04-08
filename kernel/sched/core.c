@@ -3128,7 +3128,7 @@ void scheduler_tick(void)
 				resched_cpu(i);
 			}
 
-			printk("[SURC] Switch level to %u\n", cur);
+			printk("[SURC] Switch level to %u (resched_cpu %d)\n", cur, i);
 		}
 	}
 
