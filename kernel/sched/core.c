@@ -819,7 +819,7 @@ static inline int normal_prio(struct task_struct *p)
 	else if (task_has_rt_policy(p))
 		prio = MAX_RT_PRIO-1 - p->rt_priority;
 	// adithya
-	else if ((p->tag & 3) != atomic_read(&sched_lvl.current_level))
+	else if (p->sched_class == &fair_sched_class && (p->tag & 3) != atomic_read(&sched_lvl.current_level))
 		prio = 0;
 	else
 		prio = __normal_prio(p);
@@ -3437,7 +3437,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	const struct sched_class *class;
 	struct task_struct *p;
-	int cur_lvl = atomic_read(&sched_lvl.current_level);
+	// int cur_lvl = atomic_read(&sched_lvl.current_level);
 
 	// adithya
 
