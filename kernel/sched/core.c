@@ -8,6 +8,7 @@
 #include "sched.h"
 
 #include <linux/nospec.h>
+#include <linux/timekeeping.h>
 
 #include <linux/kcov.h>
 
@@ -3043,6 +3044,70 @@ unsigned long long task_sched_runtime(struct task_struct *p)
 	return ns;
 }
 
+//Project 2
+struct level_struct {
+	int level;
+	int timeslices[4];
+	unsigned long long int quantum_start_time;
+};
+
+struct level_struct current_level;
+
+SYSCALL_DEFINE2(set_level_alloc, int, level, int, new_allocation) {
+	if ((level > 3 || level < 0) || current_uid().val != 0)
+		return -1;
+
+	struct level_struct* current_level_ptr = &current_level;
+	int total_time = 0;
+	int i;
+	for (i = 0; i < 4; ++i) 
+		total_time += (current_level_ptr -> timeslices)[i];
+	total_time = total_time + new_allocation - (current_level_ptr -> timeslices)[level];
+
+	if (total_time < 5) {
+		return -1;
+	}
+
+	(current_level_ptr -> timeslices)[level] = new_allocation;
+	return new_allocation;
+}
+
+SYSCALL_DEFINE1(get_level_alloc, int, level) {
+	struct level_struct* current_level_ptr = &current_level;
+	if (level <= 3 && level >= 0)
+		return (current_level_ptr -> timeslices)[level];
+	else
+		return -1;
+}
+
+
+
+void update_level_struct(struct task_struct* thread){
+	struct level_struct* current_level_ptr = &current_level; 
+	int level = current_level_ptr -> level;
+
+	unsigned long long int current_time = (ktime_get_real_ns() / 1000000);
+
+	if (((current_level_ptr -> timeslices)[level]) <= (current_time - current_level_ptr -> quantum_start_time)) {
+		if (level < 3)
+			current_level_ptr -> level += 1;
+		else
+			current_level_ptr -> level = 0;
+
+		current_level_ptr -> quantum_start_time = current_time;
+		set_tsk_need_resched(thread);
+
+		struct task_struct* tsk_iterator;
+		int count = 0;
+		for_each_process(tsk_iterator) {
+			tsk_iterator -> level_compliant = 1;
+			++count;
+		}
+		printk("%d task_structs have been a reset", count);
+	}
+	printk("Current level is %d\n", level);
+}
+
 /*
  * This function gets called by the timer code, with HZ frequency.
  * We call it with interrupts disabled.
@@ -3053,6 +3118,9 @@ void scheduler_tick(void)
 	struct rq *rq = cpu_rq(cpu);
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
+
+	//P2
+	update_level_struct(curr);
 
 	sched_clock_tick();
 
@@ -3441,6 +3509,7 @@ static void __sched notrace __schedule(bool preempt)
 	struct rq_flags rf;
 	struct rq *rq;
 	int cpu;
+	struct level_struct* current_level_ptr = &current_level;
 
 	cpu = smp_processor_id();
 	rq = cpu_rq(cpu);
@@ -3498,7 +3567,27 @@ static void __sched notrace __schedule(bool preempt)
 		switch_count = &prev->nvcsw;
 	}
 
-	next = pick_next_task(rq, prev, &rf);
+	next = pick_next_task(rq, prev, &rf);	
+	struct task_struct* tsk_iterator; int insert_idle = 1;
+	printk("Arrived at while loop.");
+	while ((next -> level_compliant) == 0 || (((next -> tag) & 3) != current_level_ptr -> level)) {
+		printk("Entered while loop.");
+		next -> level_compliant = 0;
+		next = pick_next_task(rq, prev, &rf);
+		
+		for_each_process(tsk_iterator) {
+			if (tsk_iterator -> level_compliant == 1) {
+				insert_idle = 0;
+				break;
+			}
+		}
+	}
+	if (insert_idle)
+		next = idle_task(cpu);
+
+	if (next -> sched_class == &idle_sched_class)
+		printk("Idle class scheduled.");
+
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
@@ -5968,6 +6057,13 @@ DECLARE_PER_CPU(cpumask_var_t, select_idle_mask);
 
 void __init sched_init(void)
 {
+	current_level.level = 0;
+	current_level.timeslices[0] = 250;
+	current_level.timeslices[1] = 1500;
+	current_level.timeslices[2] = 1500;
+	current_level.timeslices[3] = 1500;
+	current_level.quantum_start_time = 0;
+
 	int i, j;
 	unsigned long alloc_size = 0, ptr;
 

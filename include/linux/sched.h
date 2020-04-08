@@ -1205,6 +1205,12 @@ struct task_struct {
 	void				*security;
 #endif
 
+	// Project 1 tag
+	int	tag;
+
+	//Project 2
+	int level_compliant;
+
 #ifdef CONFIG_GCC_PLUGIN_STACKLEAK
 	unsigned long			lowest_stack;
 	unsigned long			prev_lowest_stack;

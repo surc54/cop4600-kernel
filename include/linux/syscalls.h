@@ -1132,6 +1132,13 @@ asmlinkage long sys_mmap_pgoff(unsigned long addr, unsigned long len,
 			unsigned long fd, unsigned long pgoff);
 asmlinkage long sys_old_mmap(struct mmap_arg_struct __user *arg);
 
+// Project 1 system calls
+asmlinkage int sys_set_tag(int pid, int new_tag);
+asmlinkage int sys_get_tag(int pid);
+
+// Project 2 system calls
+asmlinkage int sys_set_level_alloc(int level);
+asmlinkage int sys_get_level_alloc(int level, int new_allocation);
 
 /*
  * Not a real system call, but a placeholder for syscalls which are

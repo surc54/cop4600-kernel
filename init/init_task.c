@@ -179,6 +179,8 @@ struct task_struct init_task
 #ifdef CONFIG_SECURITY
 	.security	= NULL,
 #endif
+	.tag = 0,
+	.level_compliant = 1,
 };
 EXPORT_SYMBOL(init_task);
 
