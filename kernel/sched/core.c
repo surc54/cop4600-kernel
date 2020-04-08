@@ -3460,15 +3460,10 @@ aint_it_chief_fair:
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
 		else if (p->normal_prio == 0) {
-			// printk("[SURC]: Chose 0 prio task %u!!\n", p->pid);
-			p = NULL;
-			goto aint_it_chief_fair;
-		}
-		// else if ((p->tag & 3) != cur_lvl) {
-			// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
+			printk("[SURC]: Chose 0 prio task %u!!\n", p->pid);
+			// p = NULL;
 			// goto aint_it_chief_fair;
-		// }
+		}
 
 		return p;
 	}
@@ -3479,7 +3474,7 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
-			else if (p->sched_class == &idle_sched_class || p->normal_prio != 0)
+			// else if (p->sched_class == &idle_sched_class || p->normal_prio != 0)
 				return p;
 		}
 	}
