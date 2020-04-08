@@ -3104,14 +3104,14 @@ void scheduler_tick(void)
 			deac = sched_lvl.head;
 
 			while (deac != NULL) {
-				rq_s = task_rq(deac);
+				// rq_s = task_rq(deac);
 				j++;
 
-				if (!rq_s) {
+				if (!rq) {
 					printk("[SURC]: Could not find rq for deac-task!!\n");
 				} else {
 					printk("[SURC]: Waking %u\n", deac->pid);
-					activate_task(rq_s, deac, ENQUEUE_WAKEUP);
+					activate_task(rq, deac, ENQUEUE_WAKEUP);
 				}
 
 				temp = deac->surc_deact_next;
