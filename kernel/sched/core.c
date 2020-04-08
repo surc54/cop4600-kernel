@@ -3451,16 +3451,19 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		    prev->sched_class == &fair_sched_class) &&
 		   rq->nr_running == rq->cfs.h_nr_running)) {
 
-// aint_it_chief_fair:
 		p = fair_sched_class.pick_next_task(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
 			goto again;
 
 		/* Assumes fair_sched_class->next == idle_sched_class */
+aint_it_chief_fair:
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if (p->normal_prio == 0)
-			printk("[SURC]: Chose 0 prio task!!\n");
+		else if (p->normal_prio == 0) {
+			// printk("[SURC]: Chose 0 prio task!!\n");
+			p = NULL;
+			goto aint_it_chief_fair;
+		}
 		// else if ((p->tag & 3) != cur_lvl) {
 			// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
@@ -3476,12 +3479,13 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
-			else if ((p->tag & 3) != cur_lvl) {
-				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
+			else if (p->sched_class == &idle_sched_class || p->normal_prio != 0)
+				return p;
+			// else if ((p->tag & 3) != cur_lvl) {
+				// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 				// goto again;
-			}
-			return p;
+			// }
 		}
 	}
 
