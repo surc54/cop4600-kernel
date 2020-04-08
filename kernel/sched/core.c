@@ -3455,20 +3455,9 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		if (unlikely(p == RETRY_TASK))
 			goto again;
 
-aint_it_chief_fair:
 		/* Assumes fair_sched_class->next == idle_sched_class */
-		if (unlikely(!p))
+		if (likely(!p || p->normal_prio == 0))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if (p->normal_prio == 0) {
-			// printk("[SURC]: Chose 0 prio task %u!!\n", p->pid);
-			p = NULL;
-			goto aint_it_chief_fair;
-		}
-		// else if ((p->tag & 3) != cur_lvl) {
-			// sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-			// goto aint_it_chief_fair;
-		// }
 
 		return p;
 	}
@@ -6065,7 +6054,7 @@ void __init sched_init(void)
 	unsigned long alloc_size = 0, ptr;
 
 	// adithya
-	atomic_set(&sched_lvl.current_level, 3);
+	atomic_set(&sched_lvl.current_level, 0);
 	// sched_lvl.last_change = ktime_get(); // causes crash
 	sched_lvl.last_change = 0;
 	sched_lvl.alloc[0] = 1000;
