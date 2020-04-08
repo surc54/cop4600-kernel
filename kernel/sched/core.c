@@ -6060,7 +6060,7 @@ void __init sched_init(void)
 	unsigned long alloc_size = 0, ptr;
 
 	// adithya
-	atomic_set(&sched_lvl.current_level, 3);
+	atomic_set(&sched_lvl.current_level, 0);
 	// sched_lvl.last_change = ktime_get(); // causes crash
 	sched_lvl.last_change = 0;
 	sched_lvl.alloc[0] = 1000;
