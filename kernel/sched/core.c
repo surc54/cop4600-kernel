@@ -3088,7 +3088,7 @@ void scheduler_tick(void)
 		long long int last = sched_lvl.last_change / 1000000;
 		int cur = atomic_read(&sched_lvl.current_level);
 		int i = 0;
-		// struct task_struct *deac;
+		struct task_struct *tmp;
 		// struct task_struct *temp;
 		// struct rq *rq_s;
 
@@ -3102,6 +3102,10 @@ void scheduler_tick(void)
 			atomic_set(&sched_lvl.current_level, cur);
 
 			sched_lvl.last_change = now;
+
+			for_each_process(tmp) {
+				effective_prio(tmp);
+			}
 
 			// deac = sched_lvl.head;
 
