@@ -179,7 +179,6 @@ struct task_struct init_task
 #ifdef CONFIG_SECURITY
 	.security	= NULL,
 #endif
-	.surc_deact_next = NULL,
 };
 EXPORT_SYMBOL(init_task);
 
