@@ -3457,7 +3457,7 @@ aint_it_chief_fair:
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
 		else if (p->pid != 1 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
 			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-			printk("[SURC]: Stopped %u\n", p->pid);
+			printk("[SURC]: 1. Stopped %u\n", p->pid);
 			send_sig(SIGSTOP, p, 0);
 			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 			goto aint_it_chief_fair;
@@ -3474,7 +3474,7 @@ again:
 				goto again;
 			else if (p->pid != 1 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
 				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-				printk("[SURC]: Stopped %u\n", p->pid);
+				printk("[SURC]: 2. Stopped %u\n", p->pid);
 				send_sig(SIGSTOP, p, 0);
 				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
 				goto again;
