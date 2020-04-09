@@ -49,9 +49,6 @@ struct {
 	// last level change
 	long long int last_change;
 
-	// deactivated list
-	struct task_struct *head;
-
 	// allocations
 	unsigned int alloc[4];
 } sched_lvl;
@@ -6032,8 +6029,6 @@ void __init sched_init(void)
 	sched_lvl.alloc[1] = 250;
 	sched_lvl.alloc[2] = 250;
 	sched_lvl.alloc[3] = 500;
-
-	sched_lvl.head = NULL;
 
 	wait_bit_init();
 
