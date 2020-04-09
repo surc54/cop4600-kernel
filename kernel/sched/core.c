@@ -41,22 +41,13 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
-struct task_struct *add_to_deact_list(struct task_struct *head, struct task_struct *p)
-{
-	p->surc_deact_next = head;
-	return p;
-}
-
-// adithya
+// adithya - static inline??
 struct {
 	// current level in scheduler
 	atomic_t current_level;
 
 	// last level change
 	long long int last_change;
-
-	// deactivated list
-	struct task_struct *head;
 
 	// allocations
 	unsigned int alloc[4];
@@ -3084,12 +3075,6 @@ void scheduler_tick(void)
 		long long int nowMs = now / 1000000;
 		long long int last = sched_lvl.last_change / 1000000;
 		int cur = atomic_read(&sched_lvl.current_level);
-		int i = 0;
-		int j = 0;
-		struct task_struct *deac;
-		struct task_struct *temp;
-		struct rq *rq_s;
-
 		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
 				cur = 0;
@@ -3099,32 +3084,13 @@ void scheduler_tick(void)
 
 			atomic_set(&sched_lvl.current_level, cur);
 
-			sched_lvl.last_change = now;
-
-			deac = sched_lvl.head;
-
-			while (deac != NULL) {
-				// rq_s = task_rq(deac);
-				j++;
-
-				// if (!rq) {
-					// printk("[SURC]: Could not find rq for deac-task!!\n");
-				// } else {
-					printk("[SURC]: Waking %u\n", deac->pid);
-					send_sig(SIGCONT, deac, 0);
-					// activate_task(rq, deac, ENQUEUE_WAKEUP);
-				// }
-
-				temp = deac->surc_deact_next;
-				deac->surc_deact_next = NULL;
-				deac = temp;
-			}
-
 			for_each_cpu(i, false) {
 				resched_cpu(i);
 			}
 
-			printk("[SURC] Switch level to %u (%d woken)\n", cur, j);
+			printk("[SURC] Switch level to %u\n", cur);
+			
+			sched_lvl.last_change = ktime_get();
 		}
 	}
 
@@ -3433,9 +3399,6 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	const struct sched_class *class;
 	struct task_struct *p;
-	int cur_lvl = atomic_read(&sched_lvl.current_level);
-
-	// adithya
 
 	/*
 	 * Optimization: we know that if all tasks are in the fair class we can
@@ -3447,7 +3410,6 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		    prev->sched_class == &fair_sched_class) &&
 		   rq->nr_running == rq->cfs.h_nr_running)) {
 
-aint_it_chief_fair:
 		p = fair_sched_class.pick_next_task(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
 			goto again;
@@ -3455,13 +3417,6 @@ aint_it_chief_fair:
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
-			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-			printk("[SURC]: 1. Stopped %u\n", p->pid);
-			send_sig(SIGSTOP, p, 0);
-			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-			goto aint_it_chief_fair;
-		}
 
 		return p;
 	}
@@ -3472,13 +3427,6 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
-			else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
-				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-				printk("[SURC]: 2. Stopped %u\n", p->pid);
-				send_sig(SIGSTOP, p, 0);
-				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-				goto again;
-			}
 			return p;
 		}
 	}
@@ -3591,6 +3539,12 @@ static void __sched notrace __schedule(bool preempt)
 	}
 
 	next = pick_next_task(rq, prev, &rf);
+
+	// adithya
+	while (next->sched_class != &idle_sched_class && (next->tag & 3) != sched_lvl.current_level) {
+		next = pick_next_task(rq, prev, &rf);
+	}
+
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
@@ -6065,14 +6019,13 @@ void __init sched_init(void)
 
 	// adithya
 	atomic_set(&sched_lvl.current_level, 0);
-	// sched_lvl.last_change = ktime_get(); // causes crash
-	sched_lvl.last_change = 0;
-	sched_lvl.alloc[0] = 1000;
-	sched_lvl.alloc[1] = 250;
-	sched_lvl.alloc[2] = 250;
-	sched_lvl.alloc[3] = 500;
 
-	sched_lvl.head = NULL;
+	sched_lvl.last_change = 0;
+
+	sched_lvl.alloc[0] = 10;
+	sched_lvl.alloc[1] = 11;
+	sched_lvl.alloc[2] = 12;
+	sched_lvl.alloc[3] = 13;
 
 	wait_bit_init();
 
