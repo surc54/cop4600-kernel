@@ -7041,6 +7041,8 @@ again:
 		 * entity, update_curr() will update its vruntime, otherwise
 		 * forget we've ever seen it.
 		 */
+
+surc_didnt_like_that:
 		if (curr) {
 			if (curr->on_rq)
 				update_curr(cfs_rq);
@@ -7072,6 +7074,11 @@ again:
 		goto idle;
 
 	p = task_of(se);
+
+	if ((p->tag & 3) != atomic_read(&rq->lvl->current_level)) {
+		dequeue_entity(cfs_rq, se, DEQUEUE_SLEEP);
+		goto surc_didnt_like_that;
+	}
 
 	/*
 	 * Since we haven't yet done put_prev_entity and if the selected task
