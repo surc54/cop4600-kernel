@@ -3573,20 +3573,16 @@ static void __sched notrace __schedule(bool preempt)
 		switch_count = &prev->nvcsw;
 	}
 
-aint_it_chief:
 	next = pick_next_task(rq, prev, &rf);
 
 	if (next->sched_class != &idle_sched_class && (next->tag & 3) != atomic_read(&sched_lvl.current_level)) {
-		add_to_deact_list(next);
-		dequeue_task(rq, next, DEQUEUE_SLEEP);
-		// while (next->on_rq) {
-			// printk("Waiting...\n");
-		// }
-		goto aint_it_chief;
+		set_tsk_need_resched(next);
+		set_preempt_need_resched();
+	} else {
+		clear_tsk_need_resched(prev);
+		clear_preempt_need_resched();
 	}
 
-	clear_tsk_need_resched(prev);
-	clear_preempt_need_resched();
 
 	if (likely(prev != next)) {
 		rq->nr_switches++;
