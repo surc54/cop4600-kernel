@@ -3433,10 +3433,6 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	const struct sched_class *class;
 	struct task_struct *p;
-	int cur_lvl = atomic_read(&sched_lvl.current_level);
-	struct task_struct *deac_prev = NULL;
-
-	// adithya
 
 	/*
 	 * Optimization: we know that if all tasks are in the fair class we can
@@ -3448,7 +3444,6 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		    prev->sched_class == &fair_sched_class) &&
 		   rq->nr_running == rq->cfs.h_nr_running)) {
 
-aint_it_chief_fair:
 		p = fair_sched_class.pick_next_task(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
 			goto again;
@@ -3456,17 +3451,6 @@ aint_it_chief_fair:
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
-			if (deac_prev == p) {
-				return p;
-			}
-			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-			printk("[SURC]: 1. Stopped %u\n", p->pid);
-			send_sig(SIGSTOP, p, 0);
-			deac_prev = p;
-			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-			goto aint_it_chief_fair;
-		}
 
 		return p;
 	}
@@ -3477,17 +3461,6 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
-			else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
-				if (deac_prev == p) {
-					return p;
-				}
-				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
-				printk("[SURC]: 2. Stopped %u\n", p->pid);
-				send_sig(SIGSTOP, p, 0);
-				deac_prev = p;
-				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
-				goto again;
-			}
 			return p;
 		}
 	}
@@ -3599,7 +3572,17 @@ static void __sched notrace __schedule(bool preempt)
 		switch_count = &prev->nvcsw;
 	}
 
+aint_it_chief:
 	next = pick_next_task(rq, prev, &rf);
+
+	if (next->sched_class != &idle_sched_class && (next->tag & 3) != atomic_read(&sched_lvl.current_level)) {
+		dequeue_task(rq, next, DEQUEUE_SLEEP);
+		while (next->on_rq) {
+			printk("Waiting...\n");
+		}
+		goto aint_it_chief;
+	}
+
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
