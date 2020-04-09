@@ -42,7 +42,7 @@ const_debug unsigned int sysctl_sched_features =
 #endif
 
 // adithya
-static struct sched_lvl lvl;
+static struct sched_level lvl;
 
 /*
  * Number of tasks to iterate in a single balance run.
