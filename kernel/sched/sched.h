@@ -797,18 +797,6 @@ extern void rto_push_irq_work_func(struct irq_work *work);
 #endif
 #endif /* CONFIG_SMP */
 
-// adithya
-struct sched_level {
-	// current level in scheduler
-	atomic_t current_level;
-
-	// last level change
-	long long int last_change;
-
-	// allocations
-	unsigned int alloc[4];
-};
-
 /*
  * This is the main, per-CPU runqueue data structure.
  *
@@ -819,8 +807,6 @@ struct sched_level {
 struct rq {
 	/* runqueue lock: */
 	raw_spinlock_t		lock;
-
-	struct sched_level	*lvl;
 
 	/*
 	 * nr_running and cpu_load should be in the same cacheline because

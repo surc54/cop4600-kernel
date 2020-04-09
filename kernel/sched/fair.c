@@ -4161,9 +4161,6 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 {
 	struct sched_entity *left = __pick_first_entity(cfs_rq);
 	struct sched_entity *se;
-	struct sched_entity *surc_se;
-	struct task_struct *surc_ts;
-	struct rq *rq;
 
 	/*
 	 * If curr is set we have to see if its left of the leftmost entity
@@ -4206,29 +4203,6 @@ pick_next_entity(struct cfs_rq *cfs_rq, struct sched_entity *curr)
 		se = cfs_rq->next;
 
 	clear_buddies(cfs_rq, se);
-
-	// adithya
-surc_swim:
-	if (!se) return NULL;
-
-	surc_se = se;
-
-	while (surc_se && surc_se->my_q) {
-		surc_se = pick_next_entity(surc_se->my_q, surc_se->my_q->curr);
-	}
-
-	// This should mean there is a task_struct associated with this.
-	surc_ts = task_of(surc_se);
-	rq = rq_of(cfs_rq);
-
-	if (rq->lvl) {
-		if ((surc_ts->tag & 3) != atomic_read(&rq->lvl->current_level)) {
-			se = __pick_next_entity(se);
-			goto surc_swim;
-		}
-	} else {
-		printk("[SURC]: Missing rq->lvl !!!\n");
-	}
 
 	return se;
 }
@@ -7041,8 +7015,6 @@ again:
 		 * entity, update_curr() will update its vruntime, otherwise
 		 * forget we've ever seen it.
 		 */
-
-surc_didnt_like_that:
 		if (curr) {
 			if (curr->on_rq)
 				update_curr(cfs_rq);
@@ -7069,16 +7041,7 @@ surc_didnt_like_that:
 		cfs_rq = group_cfs_rq(se);
 	} while (cfs_rq);
 
-	// adithya
-	if (!se)
-		goto idle;
-
 	p = task_of(se);
-
-	if ((p->tag & 3) != atomic_read(&rq->lvl->current_level)) {
-		dequeue_entity(cfs_rq, se, DEQUEUE_SLEEP);
-		goto surc_didnt_like_that;
-	}
 
 	/*
 	 * Since we haven't yet done put_prev_entity and if the selected task

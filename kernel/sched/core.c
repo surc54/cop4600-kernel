@@ -41,8 +41,26 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
+struct task_struct *add_to_deact_list(struct task_struct *head, struct task_struct *p)
+{
+	p->surc_deact_next = head;
+	return p;
+}
+
 // adithya
-static struct sched_level lvl;
+struct {
+	// current level in scheduler
+	atomic_t current_level;
+
+	// last level change
+	long long int last_change;
+
+	// deactivated list
+	struct task_struct *head;
+
+	// allocations
+	unsigned int alloc[4];
+} sched_lvl;
 
 /*
  * Number of tasks to iterate in a single balance run.
@@ -3057,33 +3075,56 @@ void scheduler_tick(void)
 	struct rq *rq = cpu_rq(cpu);
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
-	int i = 0;
 
 	// adithya
-	if (lvl.last_change == 0) {
-		lvl.last_change = ktime_get();
+	if (sched_lvl.last_change == 0) {
+		sched_lvl.last_change = ktime_get();
 	} else {
 		long long int now = ktime_get();
 		long long int nowMs = now / 1000000;
-		long long int last = lvl.last_change / 1000000;
-		int cur = atomic_read(&lvl.current_level);
+		long long int last = sched_lvl.last_change / 1000000;
+		int cur = atomic_read(&sched_lvl.current_level);
+		int i = 0;
+		int j = 0;
+		struct task_struct *deac;
+		struct task_struct *temp;
+		struct rq *rq_s;
 
-		if (nowMs - last > lvl.alloc[cur]) {
+		if (nowMs - last > sched_lvl.alloc[cur]) {
 			if (cur >= 3) {
 				cur = 0;
 			} else {
 				cur = cur + 1;
 			}
 
-			atomic_set(&lvl.current_level, cur);
+			atomic_set(&sched_lvl.current_level, cur);
+
+			sched_lvl.last_change = now;
+
+			deac = sched_lvl.head;
+
+			while (deac != NULL) {
+				// rq_s = task_rq(deac);
+				j++;
+
+				// if (!rq) {
+					// printk("[SURC]: Could not find rq for deac-task!!\n");
+				// } else {
+					printk("[SURC]: Waking %u\n", deac->pid);
+					send_sig(SIGCONT, deac, 0);
+					// activate_task(rq, deac, ENQUEUE_WAKEUP);
+				// }
+
+				temp = deac->surc_deact_next;
+				deac->surc_deact_next = NULL;
+				deac = temp;
+			}
 
 			for_each_cpu(i, false) {
 				resched_cpu(i);
 			}
 
-			printk("[SURC] Switch level to %u\n", cur);
-			
-			lvl.last_change = ktime_get();
+			printk("[SURC] Switch level to %u (%d woken)\n", cur, j);
 		}
 	}
 
@@ -3392,6 +3433,10 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 {
 	const struct sched_class *class;
 	struct task_struct *p;
+	int cur_lvl = atomic_read(&sched_lvl.current_level);
+	struct task_struct *deac_prev = NULL;
+
+	// adithya
 
 	/*
 	 * Optimization: we know that if all tasks are in the fair class we can
@@ -3403,6 +3448,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		    prev->sched_class == &fair_sched_class) &&
 		   rq->nr_running == rq->cfs.h_nr_running)) {
 
+aint_it_chief_fair:
 		p = fair_sched_class.pick_next_task(rq, prev, rf);
 		if (unlikely(p == RETRY_TASK))
 			goto again;
@@ -3410,6 +3456,17 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
+		else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
+			if (deac_prev == p) {
+				return p;
+			}
+			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
+			printk("[SURC]: 1. Stopped %u\n", p->pid);
+			send_sig(SIGSTOP, p, 0);
+			deac_prev = p;
+			// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
+			goto aint_it_chief_fair;
+		}
 
 		return p;
 	}
@@ -3420,6 +3477,17 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
+			else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
+				if (deac_prev == p) {
+					return p;
+				}
+				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
+				printk("[SURC]: 2. Stopped %u\n", p->pid);
+				send_sig(SIGSTOP, p, 0);
+				deac_prev = p;
+				// deactivate_task(rq, p, DEQUEUE_SLEEP); // remove from rq
+				goto again;
+			}
 			return p;
 		}
 	}
@@ -3532,12 +3600,6 @@ static void __sched notrace __schedule(bool preempt)
 	}
 
 	next = pick_next_task(rq, prev, &rf);
-
-	// adithya -> disabled - causes kernel panic or hang (who knows)
-	// while (next->sched_class != &idle_sched_class && ((next->tag) & 3) != atomic_read(&sched_lvl.current_level)) {
-	// 	next = pick_next_task(rq, prev, &rf);
-	// }
-
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
 
@@ -6011,14 +6073,15 @@ void __init sched_init(void)
 	unsigned long alloc_size = 0, ptr;
 
 	// adithya
-	atomic_set(&lvl.current_level, 0);
+	atomic_set(&sched_lvl.current_level, 0);
+	// sched_lvl.last_change = ktime_get(); // causes crash
+	sched_lvl.last_change = 0;
+	sched_lvl.alloc[0] = 1000;
+	sched_lvl.alloc[1] = 250;
+	sched_lvl.alloc[2] = 250;
+	sched_lvl.alloc[3] = 500;
 
-	lvl.last_change = 0;
-
-	lvl.alloc[0] = 1000;
-	lvl.alloc[1] = 1000;
-	lvl.alloc[2] = 1000;
-	lvl.alloc[3] = 1000;
+	sched_lvl.head = NULL;
 
 	wait_bit_init();
 
@@ -6083,7 +6146,6 @@ void __init sched_init(void)
 
 		rq = cpu_rq(i);
 		raw_spin_lock_init(&rq->lock);
-		rq->lvl = &lvl;
 		rq->nr_running = 0;
 		rq->calc_load_active = 0;
 		rq->calc_load_update = jiffies + LOAD_FREQ;
@@ -7174,15 +7236,15 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 		return -1;
 	}
 
-	ret = lvl.alloc[level];
+	ret = sched_lvl.alloc[level];
 
-	printk("get_level_alloc: got current_level of %d\n", atomic_read(&lvl.current_level));
-	printk("get_level_alloc: got alloc of q0 of %d\n", lvl.alloc[0]);
-	printk("get_level_alloc: got alloc of q1 of %d\n", lvl.alloc[1]);
-	printk("get_level_alloc: got alloc of q2 of %d\n", lvl.alloc[2]);
-	printk("get_level_alloc: got alloc of q3 of %d\n", lvl.alloc[3]);
-	printk("get_level_alloc: got alloc of q3 of %d\n", lvl.alloc[3]);
-	printk("[SURC] Last time level changed: %llu (vs %llu)\n", lvl.last_change, ktime_get());
+	printk("get_level_alloc: got current_level of %d\n", atomic_read(&sched_lvl.current_level));
+	printk("get_level_alloc: got alloc of q0 of %d\n", sched_lvl.alloc[0]);
+	printk("get_level_alloc: got alloc of q1 of %d\n", sched_lvl.alloc[1]);
+	printk("get_level_alloc: got alloc of q2 of %d\n", sched_lvl.alloc[2]);
+	printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
+	printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
+	printk("[SURC] Last time level changed: %llu (vs %llu)\n", sched_lvl.last_change, ktime_get());
 
 	printk("get_level_alloc: Called!\n");
 	return ret;
@@ -7196,15 +7258,15 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 		return -1;
 	}
 	
-	total = lvl.alloc[0] 
-		+ lvl.alloc[1] + lvl.alloc[2]
-		+ lvl.alloc[3] + newAlloc - lvl.alloc[level];
+	total = sched_lvl.alloc[0] 
+		+ sched_lvl.alloc[1] + sched_lvl.alloc[2]
+		+ sched_lvl.alloc[3] + newAlloc - sched_lvl.alloc[level];
 
 	if (total < 5) {
 		return -2;
 	}
 
-	lvl.alloc[level] = newAlloc;
+	sched_lvl.alloc[level] = newAlloc;
 
 	printk("set_level_alloc: Called (tot: %u, %u -> %u)!\n", total, level, newAlloc);
 	return 0;
