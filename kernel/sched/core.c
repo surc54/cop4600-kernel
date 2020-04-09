@@ -3066,6 +3066,7 @@ void scheduler_tick(void)
 	struct rq *rq = cpu_rq(cpu);
 	struct task_struct *curr = rq->curr;
 	struct rq_flags rf;
+	int i = 0;
 
 	// adithya
 	if (sched_lvl.last_change == 0) {
@@ -3541,7 +3542,7 @@ static void __sched notrace __schedule(bool preempt)
 	next = pick_next_task(rq, prev, &rf);
 
 	// adithya
-	while (next->sched_class != &idle_sched_class && (next->tag & 3) != sched_lvl.current_level) {
+	while (next->sched_class != &idle_sched_class && (next->tag & 3) != atomic_read(&sched_lvl.current_level)) {
 		next = pick_next_task(rq, prev, &rf);
 	}
 
