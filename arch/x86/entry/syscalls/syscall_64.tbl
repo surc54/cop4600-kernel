@@ -347,7 +347,7 @@
 336	common	set_tag			__x64_sys_set_tag
 337	common	get_level_alloc		__x64_sys_get_level_alloc
 338	common	set_level_alloc		__x64_sys_set_level_alloc
-339 common  get_current_level   __x64_sys_get_current_level
+339	common	get_current_level	__x64_sys_get_current_level
 
 #
 # x32-specific system call numbers start at 512 to avoid cache impact
