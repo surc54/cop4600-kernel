@@ -3100,8 +3100,6 @@ void scheduler_tick(void)
 
 			atomic_set(&sched_lvl.current_level, cur);
 
-			sched_lvl.last_change = now;
-
 			deac = sched_lvl.head;
 
 			while (deac != NULL) {
@@ -3126,6 +3124,7 @@ void scheduler_tick(void)
 			}
 
 			printk("[SURC] Switch level to %u (%d woken)\n", cur, j);
+			sched_lvl.last_change = ktime_get();
 		}
 	}
 
