@@ -3455,7 +3455,7 @@ aint_it_chief_fair:
 		/* Assumes fair_sched_class->next == idle_sched_class */
 		if (unlikely(!p))
 			p = idle_sched_class.pick_next_task(rq, prev, rf);
-		else if (p->pid != 1 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
+		else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
 			sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 			printk("[SURC]: 1. Stopped %u\n", p->pid);
 			send_sig(SIGSTOP, p, 0);
@@ -3472,7 +3472,7 @@ again:
 		if (p) {
 			if (unlikely(p == RETRY_TASK))
 				goto again;
-			else if (p->pid != 1 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
+			else if (p->pid != 1 && p->pid != 2 && p->sched_class != &idle_sched_class && (p->tag & 3) != cur_lvl) {
 				sched_lvl.head = add_to_deact_list(sched_lvl.head, p);
 				printk("[SURC]: 2. Stopped %u\n", p->pid);
 				send_sig(SIGSTOP, p, 0);
