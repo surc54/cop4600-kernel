@@ -807,7 +807,7 @@ struct sched_level {
 
 	// allocations
 	unsigned int alloc[4];
-}
+};
 
 /*
  * This is the main, per-CPU runqueue data structure.
