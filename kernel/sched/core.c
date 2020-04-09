@@ -41,17 +41,8 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
-// adithya - static inline??
-struct {
-	// current level in scheduler
-	atomic_t current_level;
-
-	// last level change
-	long long int last_change;
-
-	// allocations
-	unsigned int alloc[4];
-} sched_lvl;
+// adithya
+static struct sched_lvl lvl;
 
 /*
  * Number of tasks to iterate in a single balance run.
@@ -3069,21 +3060,22 @@ void scheduler_tick(void)
 	int i = 0;
 
 	// adithya
-	if (sched_lvl.last_change == 0) {
-		sched_lvl.last_change = ktime_get();
+	if (lvl.last_change == 0) {
+		lvl.last_change = ktime_get();
 	} else {
 		long long int now = ktime_get();
 		long long int nowMs = now / 1000000;
-		long long int last = sched_lvl.last_change / 1000000;
-		int cur = atomic_read(&sched_lvl.current_level);
-		if (nowMs - last > sched_lvl.alloc[cur]) {
+		long long int last = lvl.last_change / 1000000;
+		int cur = atomic_read(&lvl.current_level);
+
+		if (nowMs - last > lvl.alloc[cur]) {
 			if (cur >= 3) {
 				cur = 0;
 			} else {
 				cur = cur + 1;
 			}
 
-			atomic_set(&sched_lvl.current_level, cur);
+			atomic_set(&lvl.current_level, cur);
 
 			for_each_cpu(i, false) {
 				resched_cpu(i);
@@ -3091,7 +3083,7 @@ void scheduler_tick(void)
 
 			printk("[SURC] Switch level to %u\n", cur);
 			
-			sched_lvl.last_change = ktime_get();
+			lvl.last_change = ktime_get();
 		}
 	}
 
@@ -3541,10 +3533,10 @@ static void __sched notrace __schedule(bool preempt)
 
 	next = pick_next_task(rq, prev, &rf);
 
-	// adithya
-	while (next->sched_class != &idle_sched_class && (next->tag) & 3 != atomic_read(&sched_lvl.current_level)) {
-		next = pick_next_task(rq, prev, &rf);
-	}
+	// adithya -> disabled - causes kernel panic or hang (who knows)
+	// while (next->sched_class != &idle_sched_class && ((next->tag) & 3) != atomic_read(&sched_lvl.current_level)) {
+	// 	next = pick_next_task(rq, prev, &rf);
+	// }
 
 	clear_tsk_need_resched(prev);
 	clear_preempt_need_resched();
@@ -6019,14 +6011,14 @@ void __init sched_init(void)
 	unsigned long alloc_size = 0, ptr;
 
 	// adithya
-	atomic_set(&sched_lvl.current_level, 0);
+	atomic_set(&lvl.current_level, 0);
 
-	sched_lvl.last_change = 0;
+	lvl.last_change = 0;
 
-	sched_lvl.alloc[0] = 1000;
-	sched_lvl.alloc[1] = 250;
-	sched_lvl.alloc[2] = 250;
-	sched_lvl.alloc[3] = 500;
+	lvl.alloc[0] = 1000;
+	lvl.alloc[1] = 1000;
+	lvl.alloc[2] = 1000;
+	lvl.alloc[3] = 1000;
 
 	wait_bit_init();
 
@@ -6091,6 +6083,7 @@ void __init sched_init(void)
 
 		rq = cpu_rq(i);
 		raw_spin_lock_init(&rq->lock);
+		rq->lvl = &lvl;
 		rq->nr_running = 0;
 		rq->calc_load_active = 0;
 		rq->calc_load_update = jiffies + LOAD_FREQ;
@@ -7181,15 +7174,15 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 		return -1;
 	}
 
-	ret = sched_lvl.alloc[level];
+	ret = lvl.alloc[level];
 
-	printk("get_level_alloc: got current_level of %d\n", atomic_read(&sched_lvl.current_level));
-	printk("get_level_alloc: got alloc of q0 of %d\n", sched_lvl.alloc[0]);
-	printk("get_level_alloc: got alloc of q1 of %d\n", sched_lvl.alloc[1]);
-	printk("get_level_alloc: got alloc of q2 of %d\n", sched_lvl.alloc[2]);
-	printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
-	printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
-	printk("[SURC] Last time level changed: %llu (vs %llu)\n", sched_lvl.last_change, ktime_get());
+	printk("get_level_alloc: got current_level of %d\n", atomic_read(&lvl.current_level));
+	printk("get_level_alloc: got alloc of q0 of %d\n", lvl.alloc[0]);
+	printk("get_level_alloc: got alloc of q1 of %d\n", lvl.alloc[1]);
+	printk("get_level_alloc: got alloc of q2 of %d\n", lvl.alloc[2]);
+	printk("get_level_alloc: got alloc of q3 of %d\n", lvl.alloc[3]);
+	printk("get_level_alloc: got alloc of q3 of %d\n", lvl.alloc[3]);
+	printk("[SURC] Last time level changed: %llu (vs %llu)\n", lvl.last_change, ktime_get());
 
 	printk("get_level_alloc: Called!\n");
 	return ret;
@@ -7203,15 +7196,15 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 		return -1;
 	}
 	
-	total = sched_lvl.alloc[0] 
-		+ sched_lvl.alloc[1] + sched_lvl.alloc[2]
-		+ sched_lvl.alloc[3] + newAlloc - sched_lvl.alloc[level];
+	total = lvl.alloc[0] 
+		+ lvl.alloc[1] + lvl.alloc[2]
+		+ lvl.alloc[3] + newAlloc - lvl.alloc[level];
 
 	if (total < 5) {
 		return -2;
 	}
 
-	sched_lvl.alloc[level] = newAlloc;
+	lvl.alloc[level] = newAlloc;
 
 	printk("set_level_alloc: Called (tot: %u, %u -> %u)!\n", total, level, newAlloc);
 	return 0;
