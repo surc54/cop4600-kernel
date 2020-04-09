@@ -7177,7 +7177,7 @@ const u32 sched_prio_to_wmult[40] = {
 
 SYSCALL_DEFINE0(get_current_level)
 {
-	return sched_lvl.current_level;
+	return atomic_read(&sched_lvl.current_level);
 }
 
 SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
