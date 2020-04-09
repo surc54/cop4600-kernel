@@ -3542,7 +3542,7 @@ static void __sched notrace __schedule(bool preempt)
 	next = pick_next_task(rq, prev, &rf);
 
 	// adithya
-	while (next->sched_class != &idle_sched_class && (next->tag & 3) != atomic_read(&sched_lvl.current_level)) {
+	while (next->sched_class != &idle_sched_class && ((next->tag) & 3) != atomic_read(&sched_lvl.current_level)) {
 		next = pick_next_task(rq, prev, &rf);
 	}
 
