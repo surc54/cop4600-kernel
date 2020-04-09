@@ -3577,9 +3577,9 @@ aint_it_chief:
 
 	if (next->sched_class != &idle_sched_class && (next->tag & 3) != atomic_read(&sched_lvl.current_level)) {
 		dequeue_task(rq, next, DEQUEUE_SLEEP);
-		while (next->on_rq) {
+		// while (next->on_rq) {
 			// printk("Waiting...\n");
-		}
+		// }
 		goto aint_it_chief;
 	}
 
