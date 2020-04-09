@@ -41,12 +41,6 @@ const_debug unsigned int sysctl_sched_features =
 #undef SCHED_FEAT
 #endif
 
-struct task_struct *add_to_deact_list(struct task_struct *head, struct task_struct *p)
-{
-	p->surc_deact_next = head;
-	return p;
-}
-
 // adithya
 struct {
 	// current level in scheduler
@@ -61,6 +55,13 @@ struct {
 	// allocations
 	unsigned int alloc[4];
 } sched_lvl;
+
+void add_to_deact_list(struct task_struct *p)
+{
+	p->surc_deact_next = sched_lvl.head;
+	sched_lvl.head = p;
+	return;
+}
 
 /*
  * Number of tasks to iterate in a single balance run.
@@ -3111,8 +3112,8 @@ void scheduler_tick(void)
 					// printk("[SURC]: Could not find rq for deac-task!!\n");
 				// } else {
 					printk("[SURC]: Waking %u\n", deac->pid);
-					send_sig(SIGCONT, deac, 0);
-					// activate_task(rq, deac, ENQUEUE_WAKEUP);
+					// send_sig(SIGCONT, deac, 0);
+					enqueue_task(rq, deac, ENQUEUE_WAKEUP);
 				// }
 
 				temp = deac->surc_deact_next;
@@ -3576,6 +3577,7 @@ aint_it_chief:
 	next = pick_next_task(rq, prev, &rf);
 
 	if (next->sched_class != &idle_sched_class && (next->tag & 3) != atomic_read(&sched_lvl.current_level)) {
+		add_to_deact_list(next);
 		dequeue_task(rq, next, DEQUEUE_SLEEP);
 		// while (next->on_rq) {
 			// printk("Waiting...\n");
