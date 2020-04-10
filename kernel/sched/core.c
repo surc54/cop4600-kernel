@@ -6025,10 +6025,10 @@ void __init sched_init(void)
 
 	sched_lvl.last_change = 0;
 
-	sched_lvl.alloc[0] = 1000;
-	sched_lvl.alloc[1] = 250;
-	sched_lvl.alloc[2] = 250;
-	sched_lvl.alloc[3] = 500;
+	sched_lvl.alloc[0] = 10;
+	sched_lvl.alloc[1] = 10;
+	sched_lvl.alloc[2] = 10;
+	sched_lvl.alloc[3] = 10;
 
 	wait_bit_init();
 
