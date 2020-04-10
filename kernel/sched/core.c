@@ -15,9 +15,6 @@
 #include <asm/switch_to.h>
 #include <asm/tlb.h>
 
-// adithya
-#include <linux/errno.h>
-
 #include "../workqueue_internal.h"
 #include "../smpboot.h"
 

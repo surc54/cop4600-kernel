@@ -31,7 +31,4 @@
 #define EIOCBQUEUED	529	/* iocb queued, will get completion event */
 #define ERECALLCONFLICT	530	/* conflict with recalled state */
 
-#define EBADLEVEL	531	/* Bad level given to scheduler  */
-#define EBADTOTALALLOC	532	/* Total level allocation less than 5ms  */
-
 #endif
