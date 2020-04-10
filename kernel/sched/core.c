@@ -16,7 +16,7 @@
 #include <asm/tlb.h>
 
 // adithya
-#include <include/asm/errno.h>
+#include <linux/errno.h>
 
 #include "../workqueue_internal.h"
 #include "../smpboot.h"
