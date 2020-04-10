@@ -7226,7 +7226,7 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 	sched_lvl.alloc[level] = newAlloc;
 
 	printk("set_level_alloc: Called (tot: %u, %u -> %u)!\n", total, level, newAlloc);
-	return 0;
+	return newAlloc;
 }
 
 #undef CREATE_TRACE_POINTS
