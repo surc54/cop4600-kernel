@@ -7214,8 +7214,8 @@ SYSCALL_DEFINE2(set_level_alloc, unsigned int, level, unsigned int, newAlloc)
 	if (level > 3) {
 		return -EBADLEVEL;
 	}
-	
-	total = sched_lvl.alloc[0] 
+
+	total = sched_lvl.alloc[0]
 		+ sched_lvl.alloc[1] + sched_lvl.alloc[2]
 		+ sched_lvl.alloc[3] + newAlloc - sched_lvl.alloc[level];
 
