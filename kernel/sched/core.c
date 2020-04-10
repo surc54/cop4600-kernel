@@ -7192,14 +7192,6 @@ SYSCALL_DEFINE1(get_level_alloc, unsigned int, level)
 
 	ret = sched_lvl.alloc[level];
 
-	printk("get_level_alloc: got current_level of %d\n", atomic_read(&sched_lvl.current_level));
-	// printk("get_level_alloc: got alloc of q0 of %d\n", sched_lvl.alloc[0]);
-	// printk("get_level_alloc: got alloc of q1 of %d\n", sched_lvl.alloc[1]);
-	// printk("get_level_alloc: got alloc of q2 of %d\n", sched_lvl.alloc[2]);
-	// printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
-	// printk("get_level_alloc: got alloc of q3 of %d\n", sched_lvl.alloc[3]);
-	// printk("[SURC] Last time level changed: %llu (now %llu)\n", sched_lvl.last_change, ktime_get());
-
 	printk("get_level_alloc: Called!\n");
 	return ret;
 }
