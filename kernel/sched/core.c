@@ -3078,11 +3078,13 @@ void scheduler_tick(void)
 		int i = 0;
 
 		if (nowMs - last > sched_lvl.alloc[cur]) {
-			if (cur >= 3) {
-				cur = 0;
-			} else {
-				cur = cur + 1;
-			}
+			do {
+				if (cur >= 3) {
+					cur = 0;
+				} else {
+					cur = cur + 1;
+				}
+			} while (sched_lvl.alloc[cur] == 0);
 
 			atomic_set(&sched_lvl.current_level, cur);
 
