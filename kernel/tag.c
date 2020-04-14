@@ -1,3 +1,6 @@
+#ifndef _ADITH_TAGS_
+#define _ADITH_TAGS_
+
 #include <linux/sched.h>
 #include <linux/syscalls.h>
 #include <linux/printk.h>
@@ -83,3 +86,5 @@ SYSCALL_DEFINE2(set_tag, int, pid, unsigned int, tag)
 
         return tag;
 }
+
+#endif
